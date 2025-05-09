@@ -39,3 +39,19 @@ class HTMLNode:
             if self.props is not None
             else ""
         )
+
+
+class LeafNode(HTMLNode):
+    def __init__(self, tag: str, value: str, props: dict = None):
+        super().__init__(tag, value, props=props)
+
+        assert self.children is None
+        if self.value is None:
+            raise ValueError("LeafNode must have a value")
+
+    def to_html(self) -> str:
+        return (
+            f"<{self.tag}{self.props_to_html()}>{self.value}</{self.tag}>"
+            if self.tag is not None
+            else self.value
+        )
