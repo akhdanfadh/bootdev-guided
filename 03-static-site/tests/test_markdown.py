@@ -57,10 +57,8 @@ class TestSplitNodesDelimiter(unittest.TestCase):
         expected = [
             TextNode("First ", TextType.TEXT),
             TextNode("code", TextType.CODE),
-            TextNode("", TextType.TEXT),
             TextNode("Second ", TextType.TEXT),
             TextNode("bold", TextType.BOLD),
-            TextNode("", TextType.TEXT),
         ]
         self.assertEqual(result, expected)
 

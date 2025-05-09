@@ -46,10 +46,12 @@ def split_nodes_delimiter(
             if len(split_text) % 2 == 0:
                 raise Exception("Invalid Markdown syntax: no matching delimiter found")
             for i in range(0, len(split_text)):
-                if i % 2 == 0:
-                    new_nodes.append(TextNode(split_text[i], TextType.TEXT))
-                else:
-                    new_nodes.append(TextNode(split_text[i], text_type))
+                if split_text[i] != "":
+                    new_nodes.append(
+                        TextNode(
+                            split_text[i], TextType.TEXT if i % 2 == 0 else text_type
+                        )
+                    )
     return new_nodes
 
 
