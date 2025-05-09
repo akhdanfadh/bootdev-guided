@@ -67,3 +67,31 @@ class LeafNode(HTMLNode):
             if self.tag is not None
             else self.value
         )
+
+
+class ParentNode(HTMLNode):
+    """
+    Represents a parent node in the HTML document tree, i.e., a node that can have one or more child nodes.
+
+    Typically used for tags that contain other HTML elements, such as <div>, <ul>, <ol>, <p>, etc. The ParentNode does not have a value of its own, only children.
+
+    Args:
+        tag: The HTML tag name, e.g. "div", "ul", "ol", etc. Must not be None.
+        children: A list of `HTMLNode` objects representing the children of this node. Must not be None.
+        props: Optional dictionary of HTML attributes for the tag.
+    """
+
+    def __init__(self, tag: str, children: list["HTMLNode"], props: dict = None):
+        super().__init__(tag=tag, children=children, props=props)
+
+        assert self.value is None
+        if not self.tag:  # handle empty string and None
+            raise ValueError("ParentNode must have a tag")
+        if not self.children:  # handle empty list and None
+            raise ValueError("ParentNode must have children")
+
+    def to_html(self) -> str:
+        result = ""
+        for child in self.children:
+            result += child.to_html()
+        return f"<{self.tag}{self.props_to_html()}>{result}</{self.tag}>"

@@ -1,6 +1,6 @@
 import unittest
 
-from htmlnode import HTMLNode, LeafNode
+from htmlnode import HTMLNode, LeafNode, ParentNode
 
 
 class TestHTMLNode(unittest.TestCase):
@@ -65,6 +65,85 @@ class TestLeafNode(unittest.TestCase):
     def test_leafnode_to_html_without_tag(self):
         node = LeafNode(tag=None, value="just text")
         self.assertEqual(node.to_html(), "just text")
+
+
+class TestParentNode(unittest.TestCase):
+    def test_parentnode_init(self):
+        children = [LeafNode("span", "child")]
+        props = {"class": "container"}
+        node = ParentNode("div", children, props=props)
+        self.assertEqual(node.tag, "div")
+        self.assertEqual(node.children, children)
+        self.assertEqual(node.props, props)
+        self.assertIsNone(node.value)
+
+    def test_to_html_with_no_children_raises(self):
+        with self.assertRaises(ValueError):
+            ParentNode("div", None)
+        with self.assertRaises(ValueError):
+            ParentNode("div", [])
+
+    def test_to_html_with_no_tag_raises(self):
+        child = LeafNode("span", "child")
+        with self.assertRaises(ValueError):
+            ParentNode(None, [child])
+        with self.assertRaises(ValueError):
+            ParentNode("", [child])
+
+    def test_repr(self):
+        children = [LeafNode("span", "child")]
+        props = {"class": "container"}
+        node = ParentNode("div", children, props=props)
+        self.assertEqual(repr(node), f"HTMLNode('div', 'None', {children}, {props})")
+
+    def test_to_html_with_children(self):
+        child_node = LeafNode("span", "child")
+        parent_node = ParentNode("div", [child_node])
+        self.assertEqual(parent_node.to_html(), "<div><span>child</span></div>")
+
+    def test_to_html_with_multiple_children(self):
+        child1 = LeafNode("span", "child1")
+        child2 = LeafNode("b", "child2")
+        parent = ParentNode("div", [child1, child2])
+        self.assertEqual(
+            parent.to_html(), "<div><span>child1</span><b>child2</b></div>"
+        )
+
+    def test_to_html_deeply_nested(self):
+        leaf = LeafNode("i", "deep")
+        inner = ParentNode("span", [leaf])
+        middle = ParentNode("section", [inner])
+        outer = ParentNode("div", [middle])
+        self.assertEqual(
+            outer.to_html(), "<div><section><span><i>deep</i></span></section></div>"
+        )
+
+    def test_to_html_with_props(self):
+        child = LeafNode("span", "child")
+        parent = ParentNode("div", [child], props={"class": "container", "id": "main"})
+        html = parent.to_html()
+        self.assertTrue(html.startswith("<div "))
+        self.assertIn("class=container", html)
+        self.assertIn("id=main", html)
+        self.assertIn("<span>child</span>", html)
+
+    def test_to_html_with_grandchildren(self):
+        grandchild_node = LeafNode("b", "grandchild")
+        child_node = ParentNode("span", [grandchild_node])
+        parent_node = ParentNode("div", [child_node])
+        self.assertEqual(
+            parent_node.to_html(),
+            "<div><span><b>grandchild</b></span></div>",
+        )
+
+    def test_to_html_with_nested_parentnodes_and_multiple_children(self):
+        leaf1 = LeafNode("b", "one")
+        leaf2 = LeafNode("i", "two")
+        child = ParentNode("span", [leaf1, leaf2])
+        parent = ParentNode("div", [child, LeafNode("u", "three")])
+        self.assertEqual(
+            parent.to_html(), "<div><span><b>one</b><i>two</i></span><u>three</u></div>"
+        )
 
 
 if __name__ == "__main__":
