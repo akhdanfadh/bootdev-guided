@@ -1,6 +1,10 @@
+import sys
 import unittest
 
 from htmlnode import HTMLNode, LeafNode, ParentNode
+
+# The order of dict items is not guaranteed before Python 3.7
+PYTHON_37_PLUS = sys.version_info >= (3, 7)
 
 
 class TestHTMLNode(unittest.TestCase):
@@ -31,11 +35,13 @@ class TestHTMLNode(unittest.TestCase):
     def test_props_to_html_with_props(self):
         props = {"href": "https://example.com", "class": "link"}
         node = HTMLNode(props=props)
-        # The order of dict items is not guaranteed before Python 3.7
         html = node.props_to_html()
-        self.assertTrue(html.startswith(" "))
-        self.assertIn("href=https://example.com", html)
-        self.assertIn("class=link", html)
+        if PYTHON_37_PLUS:
+            self.assertEqual(html, " href=https://example.com class=link")
+        else:
+            self.assertTrue(html.startswith(" "))
+            self.assertIn("href=https://example.com", html)
+            self.assertIn("class=link", html)
 
     def test_to_html_not_implemented(self):
         node = HTMLNode()
@@ -58,9 +64,12 @@ class TestLeafNode(unittest.TestCase):
     def test_leafnode_to_html_with_tag(self):
         node = LeafNode(tag="b", value="bold", props={"style": "font-weight:bold"})
         html = node.to_html()
-        self.assertTrue(html.startswith("<b"))
-        self.assertIn(">bold</b>", html)
-        self.assertIn("style=font-weight:bold", html)
+        if PYTHON_37_PLUS:
+            self.assertEqual(html, "<b style=font-weight:bold>bold</b>")
+        else:
+            self.assertTrue(html.startswith("<b "))
+            self.assertIn("style=font-weight:bold", html)
+            self.assertIn(">bold</b>", html)
 
     def test_leafnode_to_html_without_tag(self):
         node = LeafNode(tag=None, value="just text")
@@ -122,10 +131,15 @@ class TestParentNode(unittest.TestCase):
         child = LeafNode("span", "child")
         parent = ParentNode("div", [child], props={"class": "container", "id": "main"})
         html = parent.to_html()
-        self.assertTrue(html.startswith("<div "))
-        self.assertIn("class=container", html)
-        self.assertIn("id=main", html)
-        self.assertIn("<span>child</span>", html)
+        if PYTHON_37_PLUS:
+            self.assertEqual(
+                html, "<div class=container id=main><span>child</span></div>"
+            )
+        else:
+            self.assertTrue(html.startswith("<div "))
+            self.assertIn("class=container", html)
+            self.assertIn("id=main", html)
+            self.assertIn("<span>child</span>", html)
 
     def test_to_html_with_grandchildren(self):
         grandchild_node = LeafNode("b", "grandchild")
