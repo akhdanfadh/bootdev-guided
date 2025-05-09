@@ -6,6 +6,7 @@ from src.markdown import (
     split_nodes_delimiter,
     split_nodes_image,
     split_nodes_link,
+    text_to_textnodes,
 )
 from src.textnode import TextNode, TextType
 
@@ -326,6 +327,49 @@ class TestSplitNodesLink(unittest.TestCase):
         expected = [
             TextNode("Here is an ![img](imgurl) and a ", TextType.TEXT),
             TextNode("link", TextType.LINK, "url"),
+            TextNode(".", TextType.TEXT),
+        ]
+        self.assertEqual(result, expected)
+
+
+class TestTextToTextNodes(unittest.TestCase):
+    def test_text_to_textnodes_all_features(self):
+        text = "This is **text** with an _italic_ word and a `code block` and an ![obi wan image](https://i.imgur.com/fJRm4Vk.jpeg) and a [link](https://boot.dev)"
+        result = text_to_textnodes(text)
+        expected = [
+            TextNode("This is ", TextType.TEXT),
+            TextNode("text", TextType.BOLD),
+            TextNode(" with an ", TextType.TEXT),
+            TextNode("italic", TextType.ITALIC),
+            TextNode(" word and a ", TextType.TEXT),
+            TextNode("code block", TextType.CODE),
+            TextNode(" and an ", TextType.TEXT),
+            TextNode(
+                "obi wan image", TextType.IMAGE, "https://i.imgur.com/fJRm4Vk.jpeg"
+            ),
+            TextNode(" and a ", TextType.TEXT),
+            TextNode("link", TextType.LINK, "https://boot.dev"),
+        ]
+        self.assertEqual(result, expected)
+
+    def test_text_to_textnodes_plain_text(self):
+        text = "Just a simple sentence."
+        result = text_to_textnodes(text)
+        expected = [TextNode("Just a simple sentence.", TextType.TEXT)]
+        self.assertEqual(result, expected)
+
+    def test_text_to_textnodes_mixed_bold_italic(self):
+        text = "This is **bold** and *italic* and __also bold__ and _also italic_."
+        result = text_to_textnodes(text)
+        expected = [
+            TextNode("This is ", TextType.TEXT),
+            TextNode("bold", TextType.BOLD),
+            TextNode(" and ", TextType.TEXT),
+            TextNode("italic", TextType.ITALIC),
+            TextNode(" and ", TextType.TEXT),
+            TextNode("also bold", TextType.BOLD),
+            TextNode(" and ", TextType.TEXT),
+            TextNode("also italic", TextType.ITALIC),
             TextNode(".", TextType.TEXT),
         ]
         self.assertEqual(result, expected)
