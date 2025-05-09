@@ -1,6 +1,8 @@
 # For simplicity's sake, currently we don't care about nested inline elements.
 # For example, `This is an _italic and **bold** word_.` is not supported.
 
+import re
+
 from .textnode import TextNode, TextType
 
 
@@ -49,3 +51,32 @@ def split_nodes_delimiter(
                 else:
                     new_nodes.append(TextNode(split_text[i], text_type))
     return new_nodes
+
+
+def extract_markdown_images(text: str) -> list[tuple[str, str]]:
+    """
+    Extract all images from the given text and return a list of tuples,
+    where each tuple contains the alt text and the URL.
+    """
+    # Pattern explanation:
+    # ! - literal exclamation mark
+    # [...] - alt text between square brackets, no nested brackets allowed
+    # (...) - URL between parentheses, no nested parentheses allowed
+    alt_text_pattern = r"\[([^\[\]]*)\]"  # captures text between []
+    url_pattern = r"\(([^\(\)]*)\)"  # captures text between ()
+    return re.findall(f"!{alt_text_pattern}{url_pattern}", text)
+
+
+def extract_markdown_links(text: str) -> list[tuple[str, str]]:
+    """
+    Extract all links from the given text and return a list of tuples,
+    where each tuple contains the anchor text and the URL.
+    """
+    # Pattern explanation:
+    # (?<!!) - negative lookbehind to ensure not preceded by ! (to exclude images)
+    # [...] - anchor text between square brackets, no nested brackets allowed
+    # (...) - URL between parentheses, no nested parentheses allowed
+    anchor_text_pattern = r"\[([^\[\]]*)\]"  # captures text between []
+    url_pattern = r"\(([^\(\)]*)\)"  # captures text between ()
+    negative_lookbehind = r"(?<!!)"  # ensure not preceded by !
+    return re.findall(f"{negative_lookbehind}{anchor_text_pattern}{url_pattern}", text)
