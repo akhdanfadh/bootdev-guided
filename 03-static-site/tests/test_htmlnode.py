@@ -1,7 +1,7 @@
 import sys
 import unittest
 
-from htmlnode import HTMLNode, LeafNode, ParentNode
+from src.htmlnode import HTMLNode, LeafNode, ParentNode
 
 # The order of dict items is not guaranteed before Python 3.7
 PYTHON_37_PLUS = sys.version_info >= (3, 7)
