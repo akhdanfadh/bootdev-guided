@@ -35,8 +35,8 @@ class TestTextNode(unittest.TestCase):
 
 
 class TestTextNodeToHtmlNode(unittest.TestCase):
-    def test_normal(self):
-        node = TextNode("plain text", TextType.NORMAL)
+    def test_text(self):
+        node = TextNode("plain text", TextType.TEXT)
         html_node = text_node_to_html_node(node)
         self.assertIsInstance(html_node, LeafNode)
         self.assertIsNone(html_node.tag)
