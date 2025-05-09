@@ -57,6 +57,13 @@ def extract_markdown_images(text: str) -> list[tuple[str, str]]:
     """
     Extract all images from the given text and return a list of tuples,
     where each tuple contains the alt text and the URL.
+
+    For example:
+    ```
+    text = "This is a [link](https://example.com) and an image ![alt text](https://example.com/image.png)"
+    extract_markdown_images(text)
+    # [("alt text", "https://example.com/image.png")]
+    ```
     """
     # Pattern explanation:
     # ! - literal exclamation mark
@@ -71,6 +78,13 @@ def extract_markdown_links(text: str) -> list[tuple[str, str]]:
     """
     Extract all links from the given text and return a list of tuples,
     where each tuple contains the anchor text and the URL.
+
+    For example:
+    ```
+    text = "This is a [link](https://example.com) and an image ![alt text](https://example.com/image.png)"
+    extract_markdown_links(text)
+    # [("link", "https://example.com")]
+    ```
     """
     # Pattern explanation:
     # (?<!!) - negative lookbehind to ensure not preceded by ! (to exclude images)
