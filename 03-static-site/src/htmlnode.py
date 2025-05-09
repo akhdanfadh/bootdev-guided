@@ -1,4 +1,16 @@
 class HTMLNode:
+    """
+    A class representing a "node" in an HTML document tree.
+
+    For example, a `<p>` tag and its contents, or an `<a>` tag and its contents. It can be block level or inline, and is designed to only output HTML.
+
+    Args:
+        tag: The HTML tag name, e.g. "p", "a", "div", etc.
+        value: The value of the HTML tag, e.g. text inside a paragraph tag.
+        children: A list of `HTMLNode` objects representing the children of this node.
+        props: A dictionary of the tag's attributes, e.g. `<a>` tag might have `{"href": "https://www.google.com"}`.
+    """
+
     def __init__(
         self,
         tag: str = None,
@@ -6,17 +18,6 @@ class HTMLNode:
         children: list["HTMLNode"] = None,
         props: dict = None,
     ):
-        """
-        A class representing a "node" in an HTML document tree.
-
-        For example, a `<p>` tag and its contents, or an `<a>` tag and its contents. It can be block level or inline, and is designed to only output HTML.
-
-        Args:
-            tag: The HTML tag name, e.g. "p", "a", "div", etc.
-            value: The value of the HTML tag, e.g. text inside a paragraph tag.
-            children: A list of `HTMLNode` objects representing the children of this node.
-            props: A dictionary of the tag's attributes, e.g. `<a>` tag might have `{"href": "https://www.google.com"}`.
-        """
         self.tag = tag
         self.value = value
         self.children = children
@@ -42,6 +43,17 @@ class HTMLNode:
 
 
 class LeafNode(HTMLNode):
+    """
+    Represents a leaf node in the HTML document tree, i.e., a node that cannot have children.
+
+    Typically used for tags that contain only text or a value and do not have nested HTML elements. For example, a <span> or <a> tag with only text inside.
+
+    Args:
+        tag: The HTML tag name, e.g. "span", "a", etc.
+        value: The text or value inside the tag. Must not be None.
+        props: Optional dictionary of HTML attributes for the tag.
+    """
+
     def __init__(self, tag: str, value: str, props: dict = None):
         super().__init__(tag, value, props=props)
 
