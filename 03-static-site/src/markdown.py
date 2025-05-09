@@ -41,17 +41,18 @@ def split_nodes_delimiter(
         if node.text_type != TextType.TEXT:
             # we only attempt to split text nodes
             new_nodes.append(node)
-        else:
-            split_text = node.text.split(delimiter)
-            if len(split_text) % 2 == 0:
-                raise Exception("Invalid Markdown syntax: no matching delimiter found")
-            for i in range(0, len(split_text)):
-                if split_text[i] != "":
-                    new_nodes.append(
-                        TextNode(
-                            split_text[i], TextType.TEXT if i % 2 == 0 else text_type
-                        )
-                    )
+            continue
+
+        split_text = node.text.split(delimiter)
+        if len(split_text) % 2 == 0:
+            raise Exception("Invalid Markdown syntax: no matching delimiter found")
+
+        for i in range(0, len(split_text)):
+            if split_text[i] != "":
+                new_nodes.append(
+                    TextNode(split_text[i], TextType.TEXT if i % 2 == 0 else text_type)
+                )
+
     return new_nodes
 
 
@@ -93,27 +94,30 @@ def split_nodes_image(old_nodes: list[TextNode]) -> list[TextNode]:
     """
     new_nodes = []
     for node in old_nodes:
+        if node.text_type != TextType.TEXT:
+            new_nodes.append(node)
+            continue
+
         images = extract_markdown_images(node.text)
         if len(images) == 0:
             new_nodes.append(node)
-        else:
-            text = node.text
-            curr_index = 0
+            continue
 
-            for alt_text, url in images:
-                image_pattern = f"![{alt_text}]({url})"
-                image_index = text.find(image_pattern, curr_index)
+        text = node.text
+        curr_index = 0
 
-                if image_index > curr_index:
-                    new_nodes.append(
-                        TextNode(text[curr_index:image_index], TextType.TEXT)
-                    )
-                new_nodes.append(TextNode(alt_text, TextType.IMAGE, url))
+        for alt_text, url in images:
+            image_pattern = f"![{alt_text}]({url})"
+            image_index = text.find(image_pattern, curr_index)
 
-                curr_index = image_index + len(image_pattern)
+            if image_index > curr_index:
+                new_nodes.append(TextNode(text[curr_index:image_index], TextType.TEXT))
+            new_nodes.append(TextNode(alt_text, TextType.IMAGE, url))
 
-            if curr_index < len(text):
-                new_nodes.append(TextNode(text[curr_index:], TextType.TEXT))
+            curr_index = image_index + len(image_pattern)
+
+        if curr_index < len(text):
+            new_nodes.append(TextNode(text[curr_index:], TextType.TEXT))
 
     return new_nodes
 
@@ -157,26 +161,29 @@ def split_nodes_link(old_nodes: list[TextNode]) -> list[TextNode]:
     """
     new_nodes = []
     for node in old_nodes:
+        if node.text_type != TextType.TEXT:
+            new_nodes.append(node)
+            continue
+
         links = extract_markdown_links(node.text)
         if len(links) == 0:
             new_nodes.append(node)
-        else:
-            text = node.text
-            curr_index = 0
+            continue
 
-            for anchor_text, url in links:
-                link_pattern = f"[{anchor_text}]({url})"
-                link_index = text.find(link_pattern, curr_index)
+        text = node.text
+        curr_index = 0
 
-                if link_index > curr_index:
-                    new_nodes.append(
-                        TextNode(text[curr_index:link_index], TextType.TEXT)
-                    )
-                new_nodes.append(TextNode(anchor_text, TextType.LINK, url))
+        for anchor_text, url in links:
+            link_pattern = f"[{anchor_text}]({url})"
+            link_index = text.find(link_pattern, curr_index)
 
-                curr_index = link_index + len(link_pattern)
+            if link_index > curr_index:
+                new_nodes.append(TextNode(text[curr_index:link_index], TextType.TEXT))
+            new_nodes.append(TextNode(anchor_text, TextType.LINK, url))
 
-            if curr_index < len(text):
-                new_nodes.append(TextNode(text[curr_index:], TextType.TEXT))
+            curr_index = link_index + len(link_pattern)
+
+        if curr_index < len(text):
+            new_nodes.append(TextNode(text[curr_index:], TextType.TEXT))
 
     return new_nodes
