@@ -138,3 +138,45 @@ def extract_markdown_links(text: str) -> list[tuple[str, str]]:
     url_pattern = r"\(([^\(\)]*)\)"  # captures text between ()
     negative_lookbehind = r"(?<!!)"  # ensure not preceded by !
     return re.findall(f"{negative_lookbehind}{anchor_text_pattern}{url_pattern}", text)
+
+
+def split_nodes_link(old_nodes: list[TextNode]) -> list[TextNode]:
+    """
+    (potentially) Split the nodes at the link and return a new list of nodes.
+
+    For example:
+    ```
+    node = TextNode("This is a [link](https://example.com) and an image ![alt text](https://example.com/image.png) to be split.", TextType.TEXT)
+    split_nodes_link([node])
+    # [
+    #     TextNode("This is a ", TextType.TEXT),
+    #     TextNode("link", TextType.LINK, "https://example.com"),
+    #     TextNode(" and an image ![alt text](https://example.com/image.png) to be split.", TextType.TEXT),
+    # ]
+    ```
+    """
+    new_nodes = []
+    for node in old_nodes:
+        links = extract_markdown_links(node.text)
+        if len(links) == 0:
+            new_nodes.append(node)
+        else:
+            text = node.text
+            curr_index = 0
+
+            for anchor_text, url in links:
+                link_pattern = f"[{anchor_text}]({url})"
+                link_index = text.find(link_pattern, curr_index)
+
+                if link_index > curr_index:
+                    new_nodes.append(
+                        TextNode(text[curr_index:link_index], TextType.TEXT)
+                    )
+                new_nodes.append(TextNode(anchor_text, TextType.LINK, url))
+
+                curr_index = link_index + len(link_pattern)
+
+            if curr_index < len(text):
+                new_nodes.append(TextNode(text[curr_index:], TextType.TEXT))
+
+    return new_nodes

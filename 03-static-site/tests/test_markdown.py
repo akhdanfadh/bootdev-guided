@@ -5,6 +5,7 @@ from src.markdown import (
     extract_markdown_links,
     split_nodes_delimiter,
     split_nodes_image,
+    split_nodes_link,
 )
 from src.textnode import TextNode, TextType
 
@@ -229,6 +230,102 @@ class TestSplitNodesImage(unittest.TestCase):
         expected = [
             TextNode("Here is a [link](url) and an image ", TextType.TEXT),
             TextNode("alt", TextType.IMAGE, "imgurl"),
+            TextNode(".", TextType.TEXT),
+        ]
+        self.assertEqual(result, expected)
+
+
+class TestSplitNodesLink(unittest.TestCase):
+    def test_no_links(self):
+        node = TextNode("This is just text.", TextType.TEXT)
+        result = split_nodes_link([node])
+        expected = [TextNode("This is just text.", TextType.TEXT)]
+        self.assertEqual(result, expected)
+
+    def test_single_link(self):
+        node = TextNode("Here is a [link](url).", TextType.TEXT)
+        result = split_nodes_link([node])
+        expected = [
+            TextNode("Here is a ", TextType.TEXT),
+            TextNode("link", TextType.LINK, "url"),
+            TextNode(".", TextType.TEXT),
+        ]
+        self.assertEqual(result, expected)
+
+    def test_multiple_links(self):
+        node = TextNode("A [one](url1) and [two](url2) test.", TextType.TEXT)
+        result = split_nodes_link([node])
+        expected = [
+            TextNode("A ", TextType.TEXT),
+            TextNode("one", TextType.LINK, "url1"),
+            TextNode(" and ", TextType.TEXT),
+            TextNode("two", TextType.LINK, "url2"),
+            TextNode(" test.", TextType.TEXT),
+        ]
+        self.assertEqual(result, expected)
+
+    def test_link_at_start(self):
+        node = TextNode("[start](url) of the line.", TextType.TEXT)
+        result = split_nodes_link([node])
+        expected = [
+            TextNode("start", TextType.LINK, "url"),
+            TextNode(" of the line.", TextType.TEXT),
+        ]
+        self.assertEqual(result, expected)
+
+    def test_link_at_end(self):
+        node = TextNode("At the end [end](url)", TextType.TEXT)
+        result = split_nodes_link([node])
+        expected = [
+            TextNode("At the end ", TextType.TEXT),
+            TextNode("end", TextType.LINK, "url"),
+        ]
+        self.assertEqual(result, expected)
+
+    def test_link_only(self):
+        node = TextNode("[only](url)", TextType.TEXT)
+        result = split_nodes_link([node])
+        expected = [TextNode("only", TextType.LINK, "url")]
+        self.assertEqual(result, expected)
+
+    def test_link_with_empty_text(self):
+        node = TextNode("[](url)", TextType.TEXT)
+        result = split_nodes_link([node])
+        expected = [TextNode("", TextType.LINK, "url")]
+        self.assertEqual(result, expected)
+
+    def test_link_with_empty_url(self):
+        node = TextNode("[text]()", TextType.TEXT)
+        result = split_nodes_link([node])
+        expected = [TextNode("text", TextType.LINK, "")]
+        self.assertEqual(result, expected)
+
+    def test_link_with_empty_text_and_url(self):
+        node = TextNode("[]()", TextType.TEXT)
+        result = split_nodes_link([node])
+        expected = [TextNode("", TextType.LINK, "")]
+        self.assertEqual(result, expected)
+
+    def test_multiple_nodes(self):
+        nodes = [
+            TextNode("First [a](1)", TextType.TEXT),
+            TextNode("Second [b](2)", TextType.TEXT),
+        ]
+        result = split_nodes_link(nodes)
+        expected = [
+            TextNode("First ", TextType.TEXT),
+            TextNode("a", TextType.LINK, "1"),
+            TextNode("Second ", TextType.TEXT),
+            TextNode("b", TextType.LINK, "2"),
+        ]
+        self.assertEqual(result, expected)
+
+    def test_link_and_image(self):
+        node = TextNode("Here is an ![img](imgurl) and a [link](url).", TextType.TEXT)
+        result = split_nodes_link([node])
+        expected = [
+            TextNode("Here is an ![img](imgurl) and a ", TextType.TEXT),
+            TextNode("link", TextType.LINK, "url"),
             TextNode(".", TextType.TEXT),
         ]
         self.assertEqual(result, expected)
