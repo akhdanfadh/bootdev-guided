@@ -76,6 +76,48 @@ def extract_markdown_images(text: str) -> list[tuple[str, str]]:
     return re.findall(f"!{alt_text_pattern}{url_pattern}", text)
 
 
+def split_nodes_image(old_nodes: list[TextNode]) -> list[TextNode]:
+    """
+    (potentially) Split the nodes at the image and return a new list of nodes.
+
+    For example:
+    ```
+    node = TextNode("This is a [link](https://example.com) and an image ![alt text](https://example.com/image.png) to be split.", TextType.TEXT)
+    split_nodes_image([node])
+    # [
+    #     TextNode("This is a [link](https://example.com) and an image ", TextType.TEXT),
+    #     TextNode("alt text", TextType.IMAGE, "https://example.com/image.png"),
+    #     TextNode(" to be split.", TextType.TEXT),
+    # ]
+    ```
+    """
+    new_nodes = []
+    for node in old_nodes:
+        images = extract_markdown_images(node.text)
+        if len(images) == 0:
+            new_nodes.append(node)
+        else:
+            text = node.text
+            curr_index = 0
+
+            for alt_text, url in images:
+                image_pattern = f"![{alt_text}]({url})"
+                image_index = text.find(image_pattern, curr_index)
+
+                if image_index > curr_index:
+                    new_nodes.append(
+                        TextNode(text[curr_index:image_index], TextType.TEXT)
+                    )
+                new_nodes.append(TextNode(alt_text, TextType.IMAGE, url))
+
+                curr_index = image_index + len(image_pattern)
+
+            if curr_index < len(text):
+                new_nodes.append(TextNode(text[curr_index:], TextType.TEXT))
+
+    return new_nodes
+
+
 def extract_markdown_links(text: str) -> list[tuple[str, str]]:
     """
     Extract all links from the given text and return a list of tuples,

@@ -4,6 +4,7 @@ from src.markdown import (
     extract_markdown_images,
     extract_markdown_links,
     split_nodes_delimiter,
+    split_nodes_image,
 )
 from src.textnode import TextNode, TextType
 
@@ -133,6 +134,104 @@ class TestExtractMarkdownLinks(unittest.TestCase):
         text = "[]()"
         expected = [("", "")]
         self.assertEqual(extract_markdown_links(text), expected)
+
+
+class TestSplitNodesImage(unittest.TestCase):
+    def test_no_images(self):
+        node = TextNode("This is just text.", TextType.TEXT)
+        result = split_nodes_image([node])
+        expected = [TextNode("This is just text.", TextType.TEXT)]
+        self.assertEqual(result, expected)
+
+    def test_single_image(self):
+        node = TextNode("Here is an image ![alt](url).", TextType.TEXT)
+        result = split_nodes_image([node])
+        expected = [
+            TextNode("Here is an image ", TextType.TEXT),
+            TextNode("alt", TextType.IMAGE, "url"),
+            TextNode(".", TextType.TEXT),
+        ]
+        self.assertEqual(result, expected)
+
+    def test_multiple_images(self):
+        node = TextNode("A ![one](url1) and ![two](url2) test.", TextType.TEXT)
+        result = split_nodes_image([node])
+        expected = [
+            TextNode("A ", TextType.TEXT),
+            TextNode("one", TextType.IMAGE, "url1"),
+            TextNode(" and ", TextType.TEXT),
+            TextNode("two", TextType.IMAGE, "url2"),
+            TextNode(" test.", TextType.TEXT),
+        ]
+        self.assertEqual(result, expected)
+
+    def test_image_at_start(self):
+        node = TextNode("![alt](url) at the start.", TextType.TEXT)
+        result = split_nodes_image([node])
+        expected = [
+            TextNode("alt", TextType.IMAGE, "url"),
+            TextNode(" at the start.", TextType.TEXT),
+        ]
+        self.assertEqual(result, expected)
+
+    def test_image_at_end(self):
+        node = TextNode("At the end ![alt](url)", TextType.TEXT)
+        result = split_nodes_image([node])
+        expected = [
+            TextNode("At the end ", TextType.TEXT),
+            TextNode("alt", TextType.IMAGE, "url"),
+        ]
+        self.assertEqual(result, expected)
+
+    def test_image_only(self):
+        node = TextNode("![alt](url)", TextType.TEXT)
+        result = split_nodes_image([node])
+        expected = [TextNode("alt", TextType.IMAGE, "url")]
+        self.assertEqual(result, expected)
+
+    def test_image_with_empty_alt(self):
+        node = TextNode("![](url)", TextType.TEXT)
+        result = split_nodes_image([node])
+        expected = [TextNode("", TextType.IMAGE, "url")]
+        self.assertEqual(result, expected)
+
+    def test_image_with_empty_url(self):
+        node = TextNode("![alt]()", TextType.TEXT)
+        result = split_nodes_image([node])
+        expected = [TextNode("alt", TextType.IMAGE, "")]
+        self.assertEqual(result, expected)
+
+    def test_image_with_empty_alt_and_url(self):
+        node = TextNode("![]()", TextType.TEXT)
+        result = split_nodes_image([node])
+        expected = [TextNode("", TextType.IMAGE, "")]
+        self.assertEqual(result, expected)
+
+    def test_multiple_nodes(self):
+        nodes = [
+            TextNode("First ![a](1)", TextType.TEXT),
+            TextNode("Second ![b](2)", TextType.TEXT),
+        ]
+        result = split_nodes_image(nodes)
+        expected = [
+            TextNode("First ", TextType.TEXT),
+            TextNode("a", TextType.IMAGE, "1"),
+            TextNode("Second ", TextType.TEXT),
+            TextNode("b", TextType.IMAGE, "2"),
+        ]
+        self.assertEqual(result, expected)
+
+    def test_link_and_image(self):
+        node = TextNode(
+            "Here is a [link](url) and an image ![alt](imgurl).", TextType.TEXT
+        )
+        result = split_nodes_image([node])
+        expected = [
+            TextNode("Here is a [link](url) and an image ", TextType.TEXT),
+            TextNode("alt", TextType.IMAGE, "imgurl"),
+            TextNode(".", TextType.TEXT),
+        ]
+        self.assertEqual(result, expected)
 
 
 if __name__ == "__main__":
