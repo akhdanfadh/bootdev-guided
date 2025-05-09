@@ -13,6 +13,25 @@ class TextType(Enum):
 
 
 class TextNode:
+    """
+    Represents an inline text element in Markdown, serving as an intermediate representation before converting to HTML.
+
+    This class is used to model all types of inline text that can appear within a block of Markdown text, including:
+    - Normal text
+    - Bold text (e.g., **Bold text**)
+    - Italic text (e.g., _Italic text_)
+    - Code text (e.g., `Code text`)
+    - Links (e.g., [anchor text](url))
+    - Images (e.g., ![alt text](url))
+
+    Block-level elements such as headings, paragraphs, and lists are not represented by this class.
+
+    Attributes:
+        text (str): The text content or alt text for images.
+        text_type (TextType): The type of inline text (e.g., TEXT, BOLD, ITALIC, CODE, LINK, IMAGE).
+        url (str, optional): The URL for links and images. Defaults to None.
+    """
+
     def __init__(self, text: str, text_type: TextType, url: str = None):
         self.text = text
         self.text_type = text_type
