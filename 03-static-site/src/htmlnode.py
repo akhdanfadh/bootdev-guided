@@ -50,7 +50,7 @@ class LeafNode(HTMLNode):
 
     Args:
         tag: The HTML tag name, e.g. "span", "a", etc.
-        value: The text or value inside the tag. Must not be None.
+        value: The text or value inside the tag. Must not be None, empty string is allowed.
         props: Optional dictionary of HTML attributes for the tag.
     """
 
@@ -76,8 +76,8 @@ class ParentNode(HTMLNode):
     Typically used for tags that contain other HTML elements, such as <div>, <ul>, <ol>, <p>, etc. The ParentNode does not have a value of its own, only children.
 
     Args:
-        tag: The HTML tag name, e.g. "div", "ul", "ol", etc. Must not be None.
-        children: A list of `HTMLNode` objects representing the children of this node. Must not be None.
+        tag: The HTML tag name, e.g. "div", "ul", "ol", etc. Must not be None or empty string.
+        children: A list of `HTMLNode` objects representing the children of this node. Must not be None or empty list.
         props: Optional dictionary of HTML attributes for the tag.
     """
 
@@ -85,9 +85,9 @@ class ParentNode(HTMLNode):
         super().__init__(tag=tag, children=children, props=props)
 
         assert self.value is None
-        if not self.tag:  # handle empty string and None
+        if not self.tag:
             raise ValueError("ParentNode must have a tag")
-        if not self.children:  # handle empty list and None
+        if not self.children:
             raise ValueError("ParentNode must have children")
 
     def to_html(self) -> str:
