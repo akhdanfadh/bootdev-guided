@@ -6,6 +6,18 @@ import re
 from .textnode import TextNode, TextType
 
 
+def markdown_to_blocks(text: str) -> list[str]:
+    """
+    Convert a markdown text to a list of text blocks.
+    """
+    # Normalize line endings to Unix style
+    text = text.replace("\r\n", "\n")
+    # Split by double newlines (with optional whitespace) to get the blocks
+    blocks = re.split(r"\n\s*\n+", text.strip())
+    # Remove empty strings and strip whitespace from blocks
+    return [block.strip() for block in blocks if block.strip()]
+
+
 def text_to_textnodes(text: str) -> list[TextNode]:
     """
     Convert a string to a list of `TextNode` objects.
