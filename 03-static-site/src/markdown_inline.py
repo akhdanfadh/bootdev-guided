@@ -3,7 +3,15 @@
 
 import re
 
-from .textnode import TextNode, TextType
+from .htmlnode import HTMLNode
+from .textnode import TextNode, TextType, text_node_to_html_node
+
+
+def text_to_html_nodes(text: str) -> list[HTMLNode]:
+    """
+    Convert inline markdown string to a list of HTML nodes.
+    """
+    return list(map(text_node_to_html_node, text_to_textnodes(text)))
 
 
 def text_to_textnodes(text: str) -> list[TextNode]:
