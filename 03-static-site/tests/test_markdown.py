@@ -408,6 +408,8 @@ class TestMarkdownToBlocks(unittest.TestCase):
 
     def test_markdown_to_blocks_complex(self):
         text = """
+# This is a heading
+
 This is **bolded** paragraph
 
 This is another paragraph with _italic_ text and `code` here
@@ -415,13 +417,26 @@ This is the same paragraph on a new line
 
 - This is a list
 - with items
+
+```
+This is a code block
+```
+
+> This is a quote
+
+1. This is an ordered list
+2. With items
 """
         self.assertEqual(
             markdown_to_blocks(text),
             [
+                "# This is a heading",
                 "This is **bolded** paragraph",
                 "This is another paragraph with _italic_ text and `code` here\nThis is the same paragraph on a new line",
                 "- This is a list\n- with items",
+                "```\nThis is a code block\n```",
+                "> This is a quote",
+                "1. This is an ordered list\n2. With items",
             ],
         )
 
