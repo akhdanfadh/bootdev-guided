@@ -1,6 +1,12 @@
 import unittest
 
-from src.markdown_block import BlockType, block_to_block_type, markdown_to_blocks
+from src.htmlnode import LeafNode, ParentNode
+from src.markdown_block import (
+    BlockType,
+    block_to_block_type,
+    block_to_html_nodes,
+    markdown_to_blocks,
+)
 
 
 class TestMarkdownToBlocks(unittest.TestCase):
@@ -191,6 +197,55 @@ code here
     def test_paragraph_with_newlines(self):
         block = "This is a paragraph\nwith a newline."
         self.assertEqual(block_to_block_type(block), BlockType.PARAGRAPH)
+
+
+class TestBlockToHtmlNodes(unittest.TestCase):
+    def test_heading_simple(self):
+        block = "# Hello world"
+        result = block_to_html_nodes(block)
+        expected = [ParentNode("h1", [LeafNode(None, "Hello world", None)])]
+        self.assertEqual(repr(result), repr(expected))
+
+    def test_heading_with_inline_and_code(self):
+        block = (
+            "## Welcome to _Markdown_!\nHere is some `inline code` and a [link](url)"
+        )
+        result = block_to_html_nodes(block)
+        expected = [
+            ParentNode(
+                "h2",
+                [
+                    LeafNode(None, "Welcome to ", None),
+                    LeafNode("i", "Markdown", None),
+                    LeafNode(None, "!", None),
+                ],
+            ),
+            LeafNode(None, "Here is some ", None),
+            LeafNode("code", "inline code", None),
+            LeafNode(None, " and a ", None),
+            LeafNode("a", "link", {"href": "url"}),
+        ]
+        self.assertEqual(repr(result), repr(expected))
+
+    def test_heading_complex(self):
+        block = "###\ti like **you** for [hehe](this-is-url)\nsomething _should_ not be here\n```this too```"
+        result = block_to_html_nodes(block)
+        expected = [
+            ParentNode(
+                "h3",
+                [
+                    LeafNode(None, "i like ", None),
+                    LeafNode("b", "you", None),
+                    LeafNode(None, " for ", None),
+                    LeafNode("a", "hehe", {"href": "this-is-url"}),
+                ],
+            ),
+            LeafNode(None, "something ", None),
+            LeafNode("i", "should", None),
+            LeafNode(None, " not be here", None),
+            LeafNode("code", "this too", None),
+        ]
+        self.assertEqual(repr(result), repr(expected))
 
 
 if __name__ == "__main__":
