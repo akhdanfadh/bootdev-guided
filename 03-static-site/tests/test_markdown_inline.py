@@ -6,7 +6,7 @@ from src.markdown_inline import (
     split_nodes_delimiter,
     split_nodes_image,
     split_nodes_link,
-    text_to_textnodes,
+    text_to_text_nodes,
 )
 from src.textnode import TextNode, TextType
 
@@ -335,7 +335,7 @@ class TestSplitNodesLink(unittest.TestCase):
 class TestTextToTextNodes(unittest.TestCase):
     def test_text_to_textnodes_all_features(self):
         text = "This is **text** with an _italic_ word and a `code block` and an ![obi wan image](https://i.imgur.com/fJRm4Vk.jpeg) and a [link](https://boot.dev)"
-        result = text_to_textnodes(text)
+        result = text_to_text_nodes(text)
         expected = [
             TextNode("This is ", TextType.TEXT),
             TextNode("text", TextType.BOLD),
@@ -354,13 +354,13 @@ class TestTextToTextNodes(unittest.TestCase):
 
     def test_text_to_textnodes_plain_text(self):
         text = "Just a simple sentence."
-        result = text_to_textnodes(text)
+        result = text_to_text_nodes(text)
         expected = [TextNode("Just a simple sentence.", TextType.TEXT)]
         self.assertEqual(result, expected)
 
     def test_text_to_textnodes_mixed_bold_italic(self):
         text = "This is **bold** and *italic* and __also bold__ and _also italic_."
-        result = text_to_textnodes(text)
+        result = text_to_text_nodes(text)
         expected = [
             TextNode("This is ", TextType.TEXT),
             TextNode("bold", TextType.BOLD),

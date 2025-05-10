@@ -11,10 +11,10 @@ def text_to_html_nodes(text: str) -> list[HTMLNode]:
     """
     Convert inline markdown string to a list of HTML nodes.
     """
-    return list(map(text_node_to_html_node, text_to_textnodes(text)))
+    return list(map(text_node_to_html_node, text_to_text_nodes(text)))
 
 
-def text_to_textnodes(text: str) -> list[TextNode]:
+def text_to_text_nodes(text: str) -> list[TextNode]:
     """
     Convert a string to a list of `TextNode` objects.
     """
