@@ -59,10 +59,11 @@ def block_to_block_type(block: str) -> BlockType:
 
 
 def block_to_html_nodes(block: str) -> list[HTMLNode]:
-    lines = block.split("\n")
     html_nodes = []
     match block_to_block_type(block):
         case BlockType.HEADING:
+            lines = block.split("\n")
+
             # Handle the heading line (first line)
             heading_line = lines.pop(0)
             match = re.match(r"^(#{1,6})\s+(.*)", heading_line)
@@ -89,7 +90,7 @@ def block_to_html_nodes(block: str) -> list[HTMLNode]:
         case BlockType.QUOTE:
             # Combine all lines and make a paragraph block
             content = []
-            for line in lines:
+            for line in block.split("\n"):
                 # Remove '>' every lines
                 signs = re.match(r"^((&gt;)+\s*)", line)
                 signs_char_len = len(signs.group(1))
@@ -101,11 +102,28 @@ def block_to_html_nodes(block: str) -> list[HTMLNode]:
             return html_nodes
 
         case BlockType.UNORDERED_LIST:
-            pass
+            return block_list_to_html_nodes(block, False)
+
         case BlockType.ORDERED_LIST:
-            pass
+            return block_list_to_html_nodes(block, True)
+
         case BlockType.PARAGRAPH:
             return block_paragraph_to_html_nodes(block)
+
+
+def block_list_to_html_nodes(block: str, ordered: bool) -> list[HTMLNode]:
+    content_nodes = []
+    pattern = r"^(\d+. )" if ordered else r"^(- )"
+    for line in block.split("\n"):
+        # Remove the pattern
+        signs = re.match(pattern, line)
+        line = line[len(signs.group(1)) :]
+        # This line act as paragraph block
+        paragraph_node = block_paragraph_to_html_nodes(line)
+        content_nodes.append(ParentNode("li", paragraph_node))
+
+    tag = "ol" if ordered else "ul"
+    return [ParentNode(tag, content_nodes)]
 
 
 def block_paragraph_to_html_nodes(block: str) -> list[HTMLNode]:

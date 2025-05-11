@@ -406,6 +406,86 @@ this &amp;lt;inside chars&amp;gt; &amp;amp; **bold** &amp;quot;text&amp;quot; &a
         ]
         self.assertEqual(repr(self.process(md)), repr(expected))
 
+    def test_unordered(self):
+        md = """
+- A simple list
+
+- Multilist with
+- formatting like **this**
+"""
+        expected = [
+            ParentNode(
+                "ul",
+                [
+                    ParentNode(
+                        "li", [ParentNode("p", [LeafNode(None, "A simple list", None)])]
+                    )
+                ],
+            ),
+            ParentNode(
+                "ul",
+                [
+                    ParentNode(
+                        "li",
+                        [ParentNode("p", [LeafNode(None, "Multilist with", None)])],
+                    ),
+                    ParentNode(
+                        "li",
+                        [
+                            ParentNode(
+                                "p",
+                                [
+                                    LeafNode(None, "formatting like ", None),
+                                    LeafNode("b", "this", None),
+                                ],
+                            )
+                        ],
+                    ),
+                ],
+            ),
+        ]
+        self.assertEqual(repr(self.process(md)), repr(expected))
+
+    def test_ordered(self):
+        md = """
+1. A simple list
+
+1. Multilist with
+2. formatting like **this**
+"""
+        expected = [
+            ParentNode(
+                "ol",
+                [
+                    ParentNode(
+                        "li", [ParentNode("p", [LeafNode(None, "A simple list", None)])]
+                    )
+                ],
+            ),
+            ParentNode(
+                "ol",
+                [
+                    ParentNode(
+                        "li",
+                        [ParentNode("p", [LeafNode(None, "Multilist with", None)])],
+                    ),
+                    ParentNode(
+                        "li",
+                        [
+                            ParentNode(
+                                "p",
+                                [
+                                    LeafNode(None, "formatting like ", None),
+                                    LeafNode("b", "this", None),
+                                ],
+                            )
+                        ],
+                    ),
+                ],
+            ),
+        ]
+        self.assertEqual(repr(self.process(md)), repr(expected))
+
 
 if __name__ == "__main__":
     unittest.main()
