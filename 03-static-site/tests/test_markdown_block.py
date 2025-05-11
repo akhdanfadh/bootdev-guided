@@ -257,6 +257,73 @@ class TestBlockToHtmlNodes(unittest.TestCase):
         ]
         self.assertEqual(repr(result), repr(expected))
 
+    def test_code_simple(self):
+        block = "```\nThis `is a code` **block with** _> < & HTML_ characters\n```"
+        result = block_to_html_nodes(block)
+        expected = [
+            ParentNode(
+                "pre",
+                [
+                    LeafNode(
+                        "code",
+                        "This `is a code` **block with** _&gt; &lt; &amp; HTML_ characters",
+                        None,
+                    )
+                ],
+            )
+        ]
+        self.assertEqual(repr(result), repr(expected))
+
+    def test_code_real(self):
+        self.maxDiff = None
+        block = """```
+def test_code_simple(self):
+    block = "```\nThis `is a code` **block with** _> < & HTML_ characters\n```"
+    result = block_to_html_nodes(block)
+    expected = [
+        ParentNode(
+            "pre",
+            [
+                LeafNode(
+                    "code",
+                    "This `is a code` **block with** _&gt; &lt; &amp; HTML_ characters",
+                    None,
+                )
+            ],
+        )
+    ]
+    self.assertEqual(repr(result), repr(expected))
+```"""
+        result = block_to_html_nodes(block)
+        expected = [
+            ParentNode(
+                "pre",
+                [
+                    LeafNode(
+                        "code",
+                        """def test_code_simple(self):
+    block = &quot;```\nThis `is a code` **block with** _&gt; &lt; &amp; HTML_ characters\n```&quot;
+    result = block_to_html_nodes(block)
+    expected = [
+        ParentNode(
+            &quot;pre&quot;,
+            [
+                LeafNode(
+                    &quot;code&quot;,
+                    &quot;This `is a code` **block with** _&amp;gt; &amp;lt; &amp;amp; HTML_ characters&quot;,
+                    None,
+                )
+            ],
+        )
+    ]
+    self.assertEqual(repr(result), repr(expected))""",
+                        None,
+                    )
+                ],
+            )
+        ]
+        self.assertEqual(repr(result), repr(expected))
+
     def test_paragraph_simple(self):
         block = (
             "Welcome to _Markdown_!\t\t\n\tHere is some `inline code` and a [link](url)"

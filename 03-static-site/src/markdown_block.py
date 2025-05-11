@@ -1,8 +1,10 @@
+import html
 import re
 from enum import Enum
 
 from .htmlnode import HTMLNode, ParentNode
 from .markdown_inline import text_to_html_nodes
+from .textnode import TextNode, TextType, text_node_to_html_node
 
 
 class BlockType(Enum):
@@ -66,7 +68,18 @@ def block_to_html_nodes(block: str) -> list[HTMLNode]:
             return html_nodes
 
         case BlockType.CODE:
-            pass
+            # Remove the backticks
+            backticks = re.match(r"^(`{3,})", block)
+            backticks_count = len(backticks.group(1))
+            content = block[backticks_count:-backticks_count].strip()
+            # Escape HTML in code string
+            content = html.escape(content)
+            # Convert to HTML node without any inline parsing
+            content_node = text_node_to_html_node(TextNode(content, TextType.CODE))
+
+            html_nodes.append(ParentNode("pre", [content_node]))
+            return html_nodes
+
         case BlockType.QUOTE:
             pass
         case BlockType.UNORDERED_LIST:
