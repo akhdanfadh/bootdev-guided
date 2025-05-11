@@ -1,4 +1,3 @@
-import html
 import re
 
 from .htmlnode import ParentNode
@@ -47,21 +46,3 @@ def extract_markdown_title(text: str) -> str:
         return match.group(2).strip()
     else:
         raise Exception("No `h1` title found in the markdown text")
-
-
-def generate_page(md_path: str, html_tmpl_path: str, html_path: str) -> None:
-    """
-    Create an HTML file from a markdown file with the given HTML template file.
-    """
-    print(f"Generating page from {md_path} to {html_path} using {html_tmpl_path}")
-    with open(md_path, "r") as f:
-        md = f.read()
-        title = extract_markdown_title(md)
-        content = markdown_to_html(md)
-
-    with open(html_tmpl_path, "r") as f:
-        tmpl = f.read()
-
-    html = tmpl.replace("{{ Title }}", title).replace("{{ Content }}", content)
-    with open(html_path, "w") as f:
-        f.write(html)
