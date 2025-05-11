@@ -16,14 +16,22 @@ class BlockType(Enum):
     ORDERED_LIST = "ordered_list"
 
 
+def preprocess_markdown(text: str) -> str:
+    # Normalize line endings to Unix style
+    text = text.replace("\r\n", "\n")
+    # Escape html characters
+    text = html.escape(text)
+    # Strip whitespaces in both sides
+    text = text.strip()
+    return text
+
+
 def markdown_to_blocks(text: str) -> list[str]:
     """
     Convert a markdown text to a list of text blocks.
     """
-    # Normalize line endings to Unix style
-    text = text.replace("\r\n", "\n")
     # Split by double newlines (with optional whitespace) to get the blocks
-    blocks = re.split(r"\n\s*\n+", text.strip())
+    blocks = re.split(r"\n\s*\n+", text)
     # Remove empty strings and strip whitespace from blocks
     return [block.strip() for block in blocks if block.strip()]
 
@@ -40,7 +48,7 @@ def block_to_block_type(block: str) -> BlockType:
         return BlockType.HEADING
     elif (match := re.match(r"^(`{3,})", block)) and block.endswith(match.group(1)):
         return BlockType.CODE
-    elif all(line.startswith(">") for line in lines):
+    elif all(line.startswith("&gt;") for line in lines):
         return BlockType.QUOTE
     elif all(line.startswith("- ") for line in lines):
         return BlockType.UNORDERED_LIST
@@ -72,8 +80,6 @@ def block_to_html_nodes(block: str) -> list[HTMLNode]:
             backticks = re.match(r"^(`{3,})", block)
             backticks_count = len(backticks.group(1))
             content = block[backticks_count:-backticks_count].strip()
-            # Escape HTML in code string
-            content = html.escape(content)
             # Convert to HTML node without any inline parsing
             content_node = text_node_to_html_node(TextNode(content, TextType.CODE))
 
