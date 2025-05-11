@@ -1,13 +1,36 @@
-from .textnode import TextNode, TextType
+import os
+import shutil
+
+
+def recursive_copy_directory(source_dir: str, dest_dir: str) -> None:
+    """
+    Recursively copy a directory from source to destination.
+    """
+    assert os.path.exists(source_dir)
+    os.makedirs(dest_dir, exist_ok=True)
+
+    list_dir = os.listdir(source_dir)
+    for item in list_dir:
+        item_path = os.path.join(source_dir, item)
+        dest_path = os.path.join(dest_dir, item)
+        if os.path.isfile(item_path):
+            shutil.copy(item_path, dest_path)
+        else:
+            recursive_copy_directory(item_path, dest_path)
 
 
 def main():
-    text_node_1 = TextNode("Hello, world!", TextType.TEXT)
-    text_node_2 = TextNode("This is a test.", TextType.LINK, "https://www.google.com")
+    project_root = os.path.split(os.path.dirname(__file__))[0]
 
-    print(text_node_1)
-    print(text_node_2)
-    print(text_node_1 == text_node_2)
+    # Source files
+    static_dir = os.path.join(project_root, "static/")
+    assert os.path.exists(static_dir)
+
+    # Generated files
+    public_dir = os.path.join(project_root, "public/")
+    shutil.rmtree(public_dir, ignore_errors=True)
+
+    recursive_copy_directory(static_dir, public_dir)
 
 
 if __name__ == "__main__":
