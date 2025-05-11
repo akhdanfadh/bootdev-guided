@@ -87,7 +87,19 @@ def block_to_html_nodes(block: str) -> list[HTMLNode]:
             return html_nodes
 
         case BlockType.QUOTE:
-            pass
+            # Combine all lines and make a paragraph block
+            content = []
+            for line in lines:
+                # Remove '>' every lines
+                signs = re.match(r"^((&gt;)+\s*)", line)
+                signs_char_len = len(signs.group(1))
+                line = line[signs_char_len:]
+                content.append(line)
+            content_node = block_paragraph_to_html_nodes("\n".join(content))
+
+            html_nodes.append(ParentNode("blockquote", content_node))
+            return html_nodes
+
         case BlockType.UNORDERED_LIST:
             pass
         case BlockType.ORDERED_LIST:

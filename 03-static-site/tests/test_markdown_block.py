@@ -342,6 +342,70 @@ this &amp;lt;inside chars&amp;gt; &amp;amp; **bold** &amp;quot;text&amp;quot; &a
         ]
         self.assertEqual(repr(self.process(md)), repr(expected))
 
+    def test_quote(self):
+        md = """
+> This is simple quote
+
+> This is multiple line
+> that will combine into one
+
+> This is multiple line
+>but no space in this line
+
+>> This is multisigns
+>!but should also still works
+> even **with** formatting ![with image](image-url)
+"""
+        expected = [
+            ParentNode(
+                "blockquote",
+                [ParentNode("p", [LeafNode(None, "This is simple quote", None)])],
+            ),
+            ParentNode(
+                "blockquote",
+                [
+                    ParentNode(
+                        "p",
+                        [
+                            LeafNode(None, "This is multiple line", None),
+                            LeafNode(None, "that will combine into one", None),
+                        ],
+                    )
+                ],
+            ),
+            ParentNode(
+                "blockquote",
+                [
+                    ParentNode(
+                        "p",
+                        [
+                            LeafNode(None, "This is multiple line", None),
+                            LeafNode(None, "but no space in this line", None),
+                        ],
+                    )
+                ],
+            ),
+            ParentNode(
+                "blockquote",
+                [
+                    ParentNode(
+                        "p",
+                        [
+                            LeafNode(None, "This is multisigns", None),
+                            LeafNode(None, "!but should also still works", None),
+                            LeafNode(None, "even ", None),
+                            LeafNode("b", "with", None),
+                            LeafNode(None, " formatting ", None),
+                            LeafNode(
+                                "img", "", {"src": "image-url", "alt": "with image"}
+                            ),
+                        ],
+                    )
+                ],
+            ),
+        ]
+        self.assertEqual(repr(self.process(md)), repr(expected))
+
 
 if __name__ == "__main__":
     unittest.main()
