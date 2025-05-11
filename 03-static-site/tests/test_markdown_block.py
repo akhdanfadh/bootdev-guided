@@ -1,349 +1,346 @@
 import unittest
 
-from src.htmlnode import LeafNode, ParentNode
+from src.htmlnode import HTMLNode, LeafNode, ParentNode
 from src.markdown_block import (
     BlockType,
     block_to_block_type,
     block_to_html_nodes,
     markdown_to_blocks,
+    preprocess_markdown,
 )
 
 
-class TestMarkdownToBlocks(unittest.TestCase):
-    def test_empty_string(self):
-        self.assertEqual(markdown_to_blocks(""), [])
+class TestPreprocessMarkdown(unittest.TestCase):
+    def setUp(self):
+        self.maxDiff = None
 
-    def test_single_block(self):
-        text = "This is a single block."
-        self.assertEqual(markdown_to_blocks(text), ["This is a single block."])
-
-    def test_multiple_blocks(self):
-        text = "Block one.\n\nBlock two.\n\nBlock three."
-        self.assertEqual(
-            markdown_to_blocks(text), ["Block one.", "Block two.", "Block three."]
-        )
-
-    def test_blocks_with_extra_newlines(self):
-        text = "Block one.\n\n\nBlock two.\n\n\n\nBlock three."
-        self.assertEqual(
-            markdown_to_blocks(text), ["Block one.", "Block two.", "Block three."]
-        )
-
-    def test_blocks_with_leading_and_trailing_newlines(self):
-        text = "\n\nBlock one.\n\nBlock two.\n\n\n"
-        self.assertEqual(markdown_to_blocks(text), ["Block one.", "Block two."])
-
-    def test_blocks_with_whitespace_newlines(self):
-        text = "Block one.\n   \nBlock two.\n\t\nBlock three."
-        self.assertEqual(
-            markdown_to_blocks(text), ["Block one.", "Block two.", "Block three."]
-        )
-
-    def test_markdown_to_blocks_complex(self):
-        text = """
-# This is a heading
-
-This is **bolded** paragraph
-
-This is another paragraph with _italic_ text and `code` here
-This is the same paragraph on a new line
-
-- This is a list
-- with items
-
-```
-This is a code block
-```
-
-> This is a quote
-
-1. This is an ordered list
-2. With items
+    def test_preprocess_all(self):
+        md = """\n\t
+Should be stripped\r\n and all Unix newline
+this <inside chars> & **bold** "text" 'text_single' `code` _wow_\t
 """
-        self.assertEqual(
-            markdown_to_blocks(text),
-            [
-                "# This is a heading",
-                "This is **bolded** paragraph",
-                "This is another paragraph with _italic_ text and `code` here\nThis is the same paragraph on a new line",
-                "- This is a list\n- with items",
-                "```\nThis is a code block\n```",
-                "> This is a quote",
-                "1. This is an ordered list\n2. With items",
-            ],
-        )
+        expected = """Should be stripped\n and all Unix newline
+this &lt;inside chars&gt; &amp; **bold** &quot;text&quot; &#x27;text_single&#x27; `code` _wow_"""
+        self.assertEqual(preprocess_markdown(md), expected)
+
+
+class TestMarkdownToBlocks(unittest.TestCase):
+    def process(self, text: str) -> str:
+        return markdown_to_blocks(preprocess_markdown(text))
+
+    def test_empty_string(self):
+        self.assertEqual(self.process(""), [])
 
     def test_only_whitespace(self):
-        text = "   \n  \n\t\n"
-        self.assertEqual(markdown_to_blocks(text), [])
+        md = "   \n  \n\t\n"
+        self.assertEqual(self.process(md), [])
 
-    def test_block_with_only_special_characters(self):
-        text = "---\n\n***\n\nBlock"
-        self.assertEqual(markdown_to_blocks(text), ["---", "***", "Block"])
+    def test_single_block(self):
+        md = "This is a single block."
+        self.assertEqual(self.process(md), ["This is a single block."])
 
-    def test_windows_line_endings(self):
-        text = "Block one.\r\n\r\nBlock two.\r\n\r\nBlock three."
-        self.assertEqual(
-            markdown_to_blocks(text),
-            ["Block one.", "Block two.", "Block three."],
-        )
+    def test_multiple_blocks_complex(self):
+        md = "\nBlock one.\n   \nBlock two.\n\n\t\n\nBlock three.\n\n\n"
+        self.assertEqual(self.process(md), ["Block one.", "Block two.", "Block three."])
 
 
 class TestBlockToBlockType(unittest.TestCase):
+    def process(self, text: str) -> list[BlockType]:
+        blocks = markdown_to_blocks(preprocess_markdown(text))
+        return [block_to_block_type(block) for block in blocks]
+
     # Heading tests
-    def test_heading_single_hash(self):
-        block = "# Heading 1"
-        self.assertEqual(block_to_block_type(block), BlockType.HEADING)
+    def test_heading_correct(self):
+        md = """
+# simple heading
 
-    def test_heading_multiple_hashes(self):
-        block = "###### Heading 6"
-        self.assertEqual(block_to_block_type(block), BlockType.HEADING)
+#### subheading
 
-    def test_heading_many_spaces(self):
-        block = "#    Heading 1"
-        self.assertEqual(block_to_block_type(block), BlockType.HEADING)
+#    \t heading with whitespaces
 
-    def test_heading_tabs(self):
-        block = "#\tHeading 1"
-        self.assertEqual(block_to_block_type(block), BlockType.HEADING)
+# this heading
+has paragraph under it
+"""
+        self.assertEqual(self.process(md), [BlockType.HEADING] * 4)
 
-    def test_heading_tabs_and_spaces(self):
-        block = "#    \tHeading 1"
-        self.assertEqual(block_to_block_type(block), BlockType.HEADING)
+    def test_heading_incorrect(self):
+        md = """
+###This is actually paragraph
 
-    def test_heading_no_spaces(self):
-        block = "###This is actually paragraph"
-        self.assertEqual(block_to_block_type(block), BlockType.PARAGRAPH)
+####### This has too many hashes
 
-    def test_heading_too_many_hashes(self):
-        block = "####### This is actually paragraph"
-        self.assertEqual(block_to_block_type(block), BlockType.PARAGRAPH)
-
-    def test_heading_incorrect_hashes(self):
-        block = "##1## This is actually paragraph"
-        self.assertEqual(block_to_block_type(block), BlockType.PARAGRAPH)
+##1## incorrect hashes
+"""
+        self.assertEqual(self.process(md), [BlockType.PARAGRAPH] * 3)
 
     # Code block tests
-    def test_code_block_simple(self):
-        block = """```
-code here
-```"""
-        self.assertEqual(block_to_block_type(block), BlockType.CODE)
+    def test_code_correct(self):
+        md = """
+```print('inline code')```
 
-    def test_code_block_inline(self):
-        block = "```print('hi')```"
-        self.assertEqual(block_to_block_type(block), BlockType.CODE)
+`````right_backtick have at least the amount of left_backtick`````
 
-    def test_code_many_backticks(self):
-        block = "````print('hi')````"
-        self.assertEqual(block_to_block_type(block), BlockType.CODE)
+```
+proper code block
+```
 
-    def test_code_incorrect_backticks(self):
-        block = "````print('hi')```"
-        self.assertEqual(block_to_block_type(block), BlockType.PARAGRAPH)
+````
+this too is proper code block
+`````
+"""
+        self.assertEqual(self.process(md), [BlockType.CODE] * 4)
+
+    def test_code_incorrect(self):
+        md = """
+``
+not enough backticks
+``
+
+````right_backtick don't have the amount of left_backtick```
+
+```
+code with blank lines
+
+like this is two blocks paragraph sadly
+```
+"""
+        self.assertEqual(self.process(md), [BlockType.PARAGRAPH] * 4)
 
     # Quote block tests
-    def test_quote_block_single(self):
-        block = "> This is a quote"
-        self.assertEqual(block_to_block_type(block), BlockType.QUOTE)
+    def test_quote_correct(self):
+        md = """
+> This is simple quote
 
-    def test_quote_block_multiple(self):
-        block = "> Line 1\n> Line 2\n> Line 3"
-        self.assertEqual(block_to_block_type(block), BlockType.QUOTE)
+>This also works
 
-    def test_quote_block_multiple_but_incorrect(self):
-        block = "> Line 1\n> Line 2\nLine 3"
-        self.assertEqual(block_to_block_type(block), BlockType.PARAGRAPH)
+> Multiline
+> quote 
+>should works
 
-    def test_quote_block_many_signs(self):
-        block = ">>>> This is a quote\n>> haha"
-        self.assertEqual(block_to_block_type(block), BlockType.QUOTE)
+>>>> Many signs also works
+>!! even like this
+"""
+        self.assertEqual(self.process(md), [BlockType.QUOTE] * 4)
+
+    def test_quote_incorrect(self):
+        md = """
+> if even one line
+like this
+> does not have sign
+"""
+        self.assertEqual(self.process(md), [BlockType.PARAGRAPH])
 
     # Unordered list block tests
-    def test_unordered_list_single(self):
-        block = "- item 1"
-        self.assertEqual(block_to_block_type(block), BlockType.UNORDERED_LIST)
+    def test_unordered_correct(self):
+        md = """
+- This is simple list
 
-    def test_unordered_list_multiple(self):
-        block = "- item 1\n- item 2\n- item 3"
-        self.assertEqual(block_to_block_type(block), BlockType.UNORDERED_LIST)
+- multiline
+- should
+- works
+"""
+        self.assertEqual(self.process(md), [BlockType.UNORDERED_LIST] * 2)
 
-    def test_unordered_list_but_incorrect(self):
-        block = "- item 1\n- item 2\nitem 3\n- item 4"
-        self.assertEqual(block_to_block_type(block), BlockType.PARAGRAPH)
+    def test_unordered_incorrect(self):
+        md = """
+-If no space, it is incorrect
 
-    def test_unordered_list_many_dashes_but_incorrect(self):
-        block = "--- item 1\n--- item 2\nitem 3\n--- item 4"
-        self.assertEqual(block_to_block_type(block), BlockType.PARAGRAPH)
+- multiline should have space too
+-so this breaks it
+
+- nested line will not work
+    - sadly
+- huhu
+
+- multiline all should have dashes with space too
+so this is wrong
+
+--- many dashes won't work okay?
+"""
+        self.assertEqual(self.process(md), [BlockType.PARAGRAPH] * 5)
 
     # Ordered list block tests
-    def test_ordered_list_single(self):
-        block = "1. first"
-        self.assertEqual(block_to_block_type(block), BlockType.ORDERED_LIST)
+    def test_ordered_correct(self):
+        md = """
+1. one item is okay
 
-    def test_ordered_list_multiple(self):
-        block = "1. first\n2. second\n3. third"
-        self.assertEqual(block_to_block_type(block), BlockType.ORDERED_LIST)
+1. even more items
+2. is better
+"""
+        self.assertEqual(self.process(md), [BlockType.ORDERED_LIST] * 2)
 
-    def test_ordered_list_not_from_one(self):
-        block = "2. second\n3. third"
-        self.assertEqual(block_to_block_type(block), BlockType.PARAGRAPH)
+    def test_ordered_incorrect(self):
+        md = """
+2. sadly it should start at 1
+
+1. the number should continuous
+3. so this breaks
+
+1. Item 1
+    This breaks it also sadly
+2. so sad right?
+"""
+        self.assertEqual(self.process(md), [BlockType.PARAGRAPH] * 3)
 
     # Paragraph tests
-    def test_paragraph_simple(self):
-        block = "This is a simple paragraph."
-        self.assertEqual(block_to_block_type(block), BlockType.PARAGRAPH)
+    def test_paragraph_correct(self):
+        md = """
+this is a simple paragraph
 
-    def test_paragraph_with_newlines(self):
-        block = "This is a paragraph\nwith a newline."
-        self.assertEqual(block_to_block_type(block), BlockType.PARAGRAPH)
+and this too
+shall pass
+"""
+        self.assertEqual(self.process(md), [BlockType.PARAGRAPH] * 2)
 
 
 class TestBlockToHtmlNodes(unittest.TestCase):
-    def test_heading_simple(self):
-        block = "# Hello world"
-        result = block_to_html_nodes(block)
-        expected = [ParentNode("h1", [LeafNode(None, "Hello world", None)])]
-        self.assertEqual(repr(result), repr(expected))
+    def setUp(self):
+        self.maxDiff = None
 
-    def test_heading_with_inline_and_code(self):
-        block = (
-            "## Welcome to _Markdown_!\nHere is some `inline code` and a [link](url)"
-        )
-        result = block_to_html_nodes(block)
+    def process(self, text: str) -> list[HTMLNode]:
+        blocks = markdown_to_blocks(preprocess_markdown(text))
+        result = []
+        for block in blocks:
+            result.extend(block_to_html_nodes(block))
+        return result
+
+    def test_paragraph(self):
+        md = """
+#welcome to _markdown_ and here is some `inline code` and a [link](url)
+
+this is multiline resulting in multiple LeafNode
+but it will render as a oneline
+
+now let's try hard break with these multiple spaces   
+or these multiple tabs\t\t\t
+and we will see in html that it will break
+"""
         expected = [
             ParentNode(
-                "h2",
+                "p",
                 [
-                    LeafNode(None, "Welcome to ", None),
-                    LeafNode("i", "Markdown", None),
+                    LeafNode(None, "#welcome to ", None),
+                    LeafNode("i", "markdown", None),
+                    LeafNode(None, " and here is some ", None),
+                    LeafNode("code", "inline code", None),
+                    LeafNode(None, " and a ", None),
+                    LeafNode("a", "link", {"href": "url"}),
+                ],
+            ),
+            ParentNode(
+                "p",
+                [
+                    LeafNode(
+                        None,
+                        "this is multiline resulting in multiple LeafNode",
+                        None,
+                    ),
+                    LeafNode(
+                        None,
+                        "but it will render as a oneline",
+                        None,
+                    ),
+                ],
+            ),
+            ParentNode(
+                "p",
+                [
+                    LeafNode(
+                        None,
+                        "now let&#x27;s try hard break with these multiple spaces<br />",
+                        None,
+                    ),
+                    LeafNode(
+                        None,
+                        "or these multiple tabs<br />",
+                        None,
+                    ),
+                    LeafNode(
+                        None,
+                        "and we will see in html that it will break",
+                        None,
+                    ),
+                ],
+            ),
+        ]
+        self.assertEqual(repr(self.process(md)), repr(expected))
+
+    def test_heading(self):
+        md = """
+# this heading have _formatting_!
+
+##      i don't know but this have whitespaces\t\t
+
+### someone forgot to put
+\tnewline i guess
+
+###\tlet's try **something** [complex](this-is-url)
+```like this <code> I wonder what happen```
+"""
+        expected = [
+            ParentNode(
+                "h1",
+                [
+                    LeafNode(None, "this heading have ", None),
+                    LeafNode("i", "formatting", None),
                     LeafNode(None, "!", None),
                 ],
             ),
             ParentNode(
-                "p",
-                [
-                    LeafNode(None, "Here is some ", None),
-                    LeafNode("code", "inline code", None),
-                    LeafNode(None, " and a ", None),
-                    LeafNode("a", "link", {"href": "url"}),
-                ],
+                "h2",
+                [LeafNode(None, "i don&#x27;t know but this have whitespaces", None)],
             ),
-        ]
-        self.assertEqual(repr(result), repr(expected))
-
-    def test_heading_complex(self):
-        block = "###\ti like **you** for [hehe](this-is-url)\nsomething _should_ not be here\n```this too```"
-        result = block_to_html_nodes(block)
-        expected = [
+            ParentNode("h3", [LeafNode(None, "someone forgot to put", None)]),
+            ParentNode("p", [LeafNode(None, "newline i guess", None)]),
             ParentNode(
                 "h3",
                 [
-                    LeafNode(None, "i like ", None),
-                    LeafNode("b", "you", None),
-                    LeafNode(None, " for ", None),
-                    LeafNode("a", "hehe", {"href": "this-is-url"}),
+                    LeafNode(None, "let&#x27;s try ", None),
+                    LeafNode("b", "something", None),
+                    LeafNode(None, " ", None),
+                    LeafNode("a", "complex", {"href": "this-is-url"}),
                 ],
             ),
             ParentNode(
                 "p",
-                [
-                    LeafNode(None, "something ", None),
-                    LeafNode("i", "should", None),
-                    LeafNode(None, " not be here", None),
-                    LeafNode("code", "this too", None),
-                ],
+                [LeafNode("code", "like this &lt;code&gt; I wonder what happen", None)],
             ),
         ]
-        self.assertEqual(repr(result), repr(expected))
+        self.assertEqual(repr(self.process(md)), repr(expected))
 
-    def test_code_simple(self):
-        block = "```\nThis `is a code` **block with** _> < & HTML_ characters\n```"
-        result = block_to_html_nodes(block)
+    def test_code(self):
+        md = '''
+```
+def test_preprocess_all(self):
+    md = """
+Should be stripped\r\n and all Unix newline
+this <inside chars> & **bold** "text" 'text_single' `code` _wow_\t
+"""
+    expected = """Should be stripped\n and all Unix newline
+this &lt;inside chars&gt; &amp; **bold** &quot;text&quot; &#x27;text_single&#x27; `code` _wow_"""
+    self.assertEqual(preprocess_markdown(md), expected)
+```
+'''
         expected = [
             ParentNode(
                 "pre",
                 [
                     LeafNode(
                         "code",
-                        "This `is a code` **block with** _&gt; &lt; &amp; HTML_ characters",
+                        """def test_preprocess_all(self):
+    md = &quot;&quot;&quot;
+Should be stripped\n and all Unix newline
+this &lt;inside chars&gt; &amp; **bold** &quot;text&quot; &#x27;text_single&#x27; `code` _wow_\t
+&quot;&quot;&quot;
+    expected = &quot;&quot;&quot;Should be stripped\n and all Unix newline
+this &amp;lt;inside chars&amp;gt; &amp;amp; **bold** &amp;quot;text&amp;quot; &amp;#x27;text_single&amp;#x27; `code` _wow_&quot;&quot;&quot;
+    self.assertEqual(preprocess_markdown(md), expected)""",
                         None,
                     )
                 ],
             )
         ]
-        self.assertEqual(repr(result), repr(expected))
-
-    def test_code_real(self):
-        self.maxDiff = None
-        block = """```
-def test_code_simple(self):
-    block = "```\nThis `is a code` **block with** _> < & HTML_ characters\n```"
-    result = block_to_html_nodes(block)
-    expected = [
-        ParentNode(
-            "pre",
-            [
-                LeafNode(
-                    "code",
-                    "This `is a code` **block with** _&gt; &lt; &amp; HTML_ characters",
-                    None,
-                )
-            ],
-        )
-    ]
-    self.assertEqual(repr(result), repr(expected))
-```"""
-        result = block_to_html_nodes(block)
-        expected = [
-            ParentNode(
-                "pre",
-                [
-                    LeafNode(
-                        "code",
-                        """def test_code_simple(self):
-    block = &quot;```\nThis `is a code` **block with** _&gt; &lt; &amp; HTML_ characters\n```&quot;
-    result = block_to_html_nodes(block)
-    expected = [
-        ParentNode(
-            &quot;pre&quot;,
-            [
-                LeafNode(
-                    &quot;code&quot;,
-                    &quot;This `is a code` **block with** _&amp;gt; &amp;lt; &amp;amp; HTML_ characters&quot;,
-                    None,
-                )
-            ],
-        )
-    ]
-    self.assertEqual(repr(result), repr(expected))""",
-                        None,
-                    )
-                ],
-            )
-        ]
-        self.assertEqual(repr(result), repr(expected))
-
-    def test_paragraph_simple(self):
-        block = (
-            "Welcome to _Markdown_!\t\t\n\tHere is some `inline code` and a [link](url)"
-        )
-        result = block_to_html_nodes(block)
-        expected = [
-            ParentNode(
-                "p",
-                [
-                    LeafNode(None, "Welcome to ", None),
-                    LeafNode("i", "Markdown", None),
-                    LeafNode(None, "!<br />", None),
-                    LeafNode(None, "Here is some ", None),
-                    LeafNode("code", "inline code", None),
-                    LeafNode(None, " and a ", None),
-                    LeafNode("a", "link", {"href": "url"}),
-                ],
-            ),
-        ]
-        self.assertEqual(repr(result), repr(expected))
+        self.assertEqual(repr(self.process(md)), repr(expected))
 
 
 if __name__ == "__main__":
