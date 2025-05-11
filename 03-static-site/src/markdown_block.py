@@ -37,8 +37,11 @@ def block_to_block_type(block: str) -> BlockType:
         return BlockType.HEADING
     elif (match := re.match(r"^(`{3,})", block)) and block.endswith(match.group(1)):
         return BlockType.CODE
-    elif all(line.startswith("&gt;") for line in lines):
+    # --- BOOTDEV requirement
+    # No escaping HTML
+    elif all(line.startswith(">") for line in lines):
         return BlockType.QUOTE
+    # --- BOOTDEV requirement
     elif all(line.startswith("- ") for line in lines):
         return BlockType.UNORDERED_LIST
     elif all(line.startswith(f"{i + 1}. ") for i, line in enumerate(lines)):
@@ -81,11 +84,17 @@ def block_to_html_nodes(block: str) -> list[HTMLNode]:
             content = []
             for line in block.split("\n"):
                 # Remove '>' every lines
-                signs = re.match(r"^((&gt;)+\s*)", line)
+                # --- BOOTDEV requirement
+                # No escaping HTML
+                signs = re.match(r"^(>+\s*)", line)
+                # --- BOOTDEV requirement
                 signs_char_len = len(signs.group(1))
                 line = line[signs_char_len:]
                 content.append(line)
-            content_node = block_paragraph_to_html_nodes("\n".join(content))
+            # --- BOOTDEV requirement
+            # Generally the content of quote is under paragraph
+            content_node = text_to_html_nodes(" ".join(content))
+            # --- BOOTDEV requirement
 
             html_nodes.append(ParentNode("blockquote", content_node))
             return html_nodes
@@ -107,9 +116,11 @@ def block_list_to_html_nodes(block: str, ordered: bool) -> list[HTMLNode]:
         # Remove the pattern
         signs = re.match(pattern, line)
         line = line[len(signs.group(1)) :]
-        # This line act as paragraph block
-        paragraph_node = block_paragraph_to_html_nodes(line)
-        content_nodes.append(ParentNode("li", paragraph_node))
+        # --- BOOTDEV requirement
+        # Generally the content of list is under paragraph,
+        content_node = text_to_html_nodes(line)
+        content_nodes.append(ParentNode("li", content_node))
+        # --- BOOTDEV requirement
 
     tag = "ol" if ordered else "ul"
     return [ParentNode(tag, content_nodes)]

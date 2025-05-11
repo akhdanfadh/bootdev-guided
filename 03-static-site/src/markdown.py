@@ -11,8 +11,10 @@ def preprocess_markdown(text: str) -> str:
     """
     # Normalize line endings to Unix style
     text = text.replace("\r\n", "\n")
-    # Escape html characters
-    text = html.escape(text)
+    # --- BOOTDEV requirement
+    # (Don't) Escape html characters
+    # text = html.escape(text)
+    # --- BOOTDEV requirement
     # Strip whitespaces in both sides
     text = text.strip()
     return text
