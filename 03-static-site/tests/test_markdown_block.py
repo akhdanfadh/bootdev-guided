@@ -220,10 +220,15 @@ class TestBlockToHtmlNodes(unittest.TestCase):
                     LeafNode(None, "!", None),
                 ],
             ),
-            LeafNode(None, "Here is some ", None),
-            LeafNode("code", "inline code", None),
-            LeafNode(None, " and a ", None),
-            LeafNode("a", "link", {"href": "url"}),
+            ParentNode(
+                "p",
+                [
+                    LeafNode(None, "Here is some ", None),
+                    LeafNode("code", "inline code", None),
+                    LeafNode(None, " and a ", None),
+                    LeafNode("a", "link", {"href": "url"}),
+                ],
+            ),
         ]
         self.assertEqual(repr(result), repr(expected))
 
@@ -240,10 +245,15 @@ class TestBlockToHtmlNodes(unittest.TestCase):
                     LeafNode("a", "hehe", {"href": "this-is-url"}),
                 ],
             ),
-            LeafNode(None, "something ", None),
-            LeafNode("i", "should", None),
-            LeafNode(None, " not be here", None),
-            LeafNode("code", "this too", None),
+            ParentNode(
+                "p",
+                [
+                    LeafNode(None, "something ", None),
+                    LeafNode("i", "should", None),
+                    LeafNode(None, " not be here", None),
+                    LeafNode("code", "this too", None),
+                ],
+            ),
         ]
         self.assertEqual(repr(result), repr(expected))
 

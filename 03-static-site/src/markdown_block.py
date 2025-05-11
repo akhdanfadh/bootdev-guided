@@ -58,11 +58,11 @@ def block_to_html_nodes(block: str) -> list[HTMLNode]:
             match = re.match(r"^(#{1,6})\s+(.*)", heading_line)
             hash_count = len(match.group(1))
             head_html_nodes = text_to_html_nodes(match.group(2))
-
-            # If there are lines after heading, treat them as inline text
             html_nodes.append(ParentNode(f"h{str(hash_count)}", head_html_nodes))
-            for line in lines:
-                html_nodes.extend(text_to_html_nodes(line))
+
+            # If there are lines after heading, they are paragraph block
+            if lines:
+                html_nodes.extend(block_paragraph_to_html_nodes("\n".join(lines)))
             return html_nodes
 
         case BlockType.CODE:
