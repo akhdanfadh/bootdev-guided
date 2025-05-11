@@ -1,12 +1,12 @@
 import unittest
 
 from src.htmlnode import HTMLNode, LeafNode, ParentNode
+from src.markdown import preprocess_markdown
 from src.markdown_block import (
     BlockType,
     block_to_block_type,
     block_to_html_nodes,
     markdown_to_blocks,
-    preprocess_markdown,
 )
 
 

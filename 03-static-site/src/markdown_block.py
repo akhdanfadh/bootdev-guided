@@ -1,4 +1,3 @@
-import html
 import re
 from enum import Enum
 
@@ -14,16 +13,6 @@ class BlockType(Enum):
     QUOTE = "quote"
     UNORDERED_LIST = "unordered_list"
     ORDERED_LIST = "ordered_list"
-
-
-def preprocess_markdown(text: str) -> str:
-    # Normalize line endings to Unix style
-    text = text.replace("\r\n", "\n")
-    # Escape html characters
-    text = html.escape(text)
-    # Strip whitespaces in both sides
-    text = text.strip()
-    return text
 
 
 def markdown_to_blocks(text: str) -> list[str]:
