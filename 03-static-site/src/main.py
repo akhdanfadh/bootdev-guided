@@ -1,6 +1,8 @@
 import os
 import shutil
 
+from .markdown import generate_page
+
 
 def recursive_copy_directory(source_dir: str, dest_dir: str) -> None:
     """
@@ -31,6 +33,12 @@ def main():
     shutil.rmtree(public_dir, ignore_errors=True)
 
     recursive_copy_directory(static_dir, public_dir)
+
+    # Generate HTML
+    md_path = os.path.join(project_root, "content/index.md")
+    tmpl_path = os.path.join(project_root, "template.html")
+    html_path = os.path.join(project_root, "public/index.html")
+    generate_page(md_path, tmpl_path, html_path)
 
 
 if __name__ == "__main__":
