@@ -247,6 +247,27 @@ class TestBlockToHtmlNodes(unittest.TestCase):
         ]
         self.assertEqual(repr(result), repr(expected))
 
+    def test_paragraph_simple(self):
+        block = (
+            "Welcome to _Markdown_!\t\t\n\tHere is some `inline code` and a [link](url)"
+        )
+        result = block_to_html_nodes(block)
+        expected = [
+            ParentNode(
+                "p",
+                [
+                    LeafNode(None, "Welcome to ", None),
+                    LeafNode("i", "Markdown", None),
+                    LeafNode(None, "!<br />", None),
+                    LeafNode(None, "Here is some ", None),
+                    LeafNode("code", "inline code", None),
+                    LeafNode(None, " and a ", None),
+                    LeafNode("a", "link", {"href": "url"}),
+                ],
+            ),
+        ]
+        self.assertEqual(repr(result), repr(expected))
+
 
 if __name__ == "__main__":
     unittest.main()

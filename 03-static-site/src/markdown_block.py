@@ -74,4 +74,18 @@ def block_to_html_nodes(block: str) -> list[HTMLNode]:
         case BlockType.ORDERED_LIST:
             pass
         case BlockType.PARAGRAPH:
-            pass
+            return block_paragraph_to_html_nodes(block)
+
+
+def block_paragraph_to_html_nodes(block: str) -> list[HTMLNode]:
+    # Block-wise, it is already stripped in markdown_to_blocks function
+    # CommonMark 0.31.2 ex222: leading spaces or tabs are skipped
+    lines = [line.lstrip() for line in block.split("\n")]
+    content_nodes = []
+
+    for line in lines:
+        # CommonMark 0.31.2 ex226: hard line break
+        line = re.sub(r"\s{2,}$", "<br />", line)
+        content_nodes.extend(text_to_html_nodes(line))
+
+    return [ParentNode("p", content_nodes)]
