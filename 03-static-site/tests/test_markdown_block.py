@@ -20,7 +20,7 @@ Should be stripped\r\n and all Unix newline
 this <inside chars> & **bold** "text" 'text_single' `code` _wow_\t
 """
         expected = """Should be stripped\n and all Unix newline
-this &lt;inside chars&gt; &amp; **bold** &quot;text&quot; &#x27;text_single&#x27; `code` _wow_"""
+this <inside chars> & **bold** "text" 'text_single' `code` _wow_"""
         self.assertEqual(preprocess_markdown(md), expected)
 
 
@@ -247,7 +247,7 @@ and we will see in html that it will break
                 [
                     LeafNode(
                         None,
-                        "now let&#x27;s try hard break with these multiple spaces<br />",
+                        "now let's try hard break with these multiple spaces<br />",
                         None,
                     ),
                     LeafNode(
@@ -288,14 +288,14 @@ and we will see in html that it will break
             ),
             ParentNode(
                 "h2",
-                [LeafNode(None, "i don&#x27;t know but this have whitespaces", None)],
+                [LeafNode(None, "i don't know but this have whitespaces", None)],
             ),
             ParentNode("h3", [LeafNode(None, "someone forgot to put", None)]),
             ParentNode("p", [LeafNode(None, "newline i guess", None)]),
             ParentNode(
                 "h3",
                 [
-                    LeafNode(None, "let&#x27;s try ", None),
+                    LeafNode(None, "let's try ", None),
                     LeafNode("b", "something", None),
                     LeafNode(None, " ", None),
                     LeafNode("a", "complex", {"href": "this-is-url"}),
@@ -303,7 +303,7 @@ and we will see in html that it will break
             ),
             ParentNode(
                 "p",
-                [LeafNode("code", "like this &lt;code&gt; I wonder what happen", None)],
+                [LeafNode("code", "like this <code> I wonder what happen", None)],
             ),
         ]
         self.assertEqual(repr(self.process(md)), repr(expected))
@@ -327,14 +327,14 @@ this &lt;inside chars&gt; &amp; **bold** &quot;text&quot; &#x27;text_single&#x27
                 [
                     LeafNode(
                         "code",
-                        """def test_preprocess_all(self):
-    md = &quot;&quot;&quot;
+                        '''def test_preprocess_all(self):
+    md = """
 Should be stripped\n and all Unix newline
-this &lt;inside chars&gt; &amp; **bold** &quot;text&quot; &#x27;text_single&#x27; `code` _wow_\t
-&quot;&quot;&quot;
-    expected = &quot;&quot;&quot;Should be stripped\n and all Unix newline
-this &amp;lt;inside chars&amp;gt; &amp;amp; **bold** &amp;quot;text&amp;quot; &amp;#x27;text_single&amp;#x27; `code` _wow_&quot;&quot;&quot;
-    self.assertEqual(preprocess_markdown(md), expected)""",
+this <inside chars> & **bold** "text" 'text_single' `code` _wow_\t
+"""
+    expected = """Should be stripped\n and all Unix newline
+this &lt;inside chars&gt; &amp; **bold** &quot;text&quot; &#x27;text_single&#x27; `code` _wow_"""
+    self.assertEqual(preprocess_markdown(md), expected)''',
                         None,
                     )
                 ],
@@ -357,50 +357,34 @@ this &amp;lt;inside chars&amp;gt; &amp;amp; **bold** &amp;quot;text&amp;quot; &a
 > even **with** formatting ![with image](image-url)
 """
         expected = [
-            ParentNode(
-                "blockquote",
-                [ParentNode("p", [LeafNode(None, "This is simple quote", None)])],
-            ),
+            ParentNode("blockquote", [LeafNode(None, "This is simple quote", None)]),
             ParentNode(
                 "blockquote",
                 [
-                    ParentNode(
-                        "p",
-                        [
-                            LeafNode(None, "This is multiple line", None),
-                            LeafNode(None, "that will combine into one", None),
-                        ],
+                    LeafNode(
+                        None, "This is multiple line that will combine into one", None
                     )
                 ],
             ),
             ParentNode(
                 "blockquote",
                 [
-                    ParentNode(
-                        "p",
-                        [
-                            LeafNode(None, "This is multiple line", None),
-                            LeafNode(None, "but no space in this line", None),
-                        ],
+                    LeafNode(
+                        None, "This is multiple line but no space in this line", None
                     )
                 ],
             ),
             ParentNode(
                 "blockquote",
                 [
-                    ParentNode(
-                        "p",
-                        [
-                            LeafNode(None, "This is multisigns", None),
-                            LeafNode(None, "!but should also still works", None),
-                            LeafNode(None, "even ", None),
-                            LeafNode("b", "with", None),
-                            LeafNode(None, " formatting ", None),
-                            LeafNode(
-                                "img", "", {"src": "image-url", "alt": "with image"}
-                            ),
-                        ],
-                    )
+                    LeafNode(
+                        None,
+                        "This is multisigns !but should also still works even ",
+                        None,
+                    ),
+                    LeafNode("b", "with", None),
+                    LeafNode(None, " formatting ", None),
+                    LeafNode("img", "", {"src": "image-url", "alt": "with image"}),
                 ],
             ),
         ]
@@ -416,29 +400,17 @@ this &amp;lt;inside chars&amp;gt; &amp;amp; **bold** &amp;quot;text&amp;quot; &a
         expected = [
             ParentNode(
                 "ul",
-                [
-                    ParentNode(
-                        "li", [ParentNode("p", [LeafNode(None, "A simple list", None)])]
-                    )
-                ],
+                [ParentNode("li", [LeafNode(None, "A simple list", None)])],
             ),
             ParentNode(
                 "ul",
                 [
-                    ParentNode(
-                        "li",
-                        [ParentNode("p", [LeafNode(None, "Multilist with", None)])],
-                    ),
+                    ParentNode("li", [LeafNode(None, "Multilist with", None)]),
                     ParentNode(
                         "li",
                         [
-                            ParentNode(
-                                "p",
-                                [
-                                    LeafNode(None, "formatting like ", None),
-                                    LeafNode("b", "this", None),
-                                ],
-                            )
+                            LeafNode(None, "formatting like ", None),
+                            LeafNode("b", "this", None),
                         ],
                     ),
                 ],
@@ -456,29 +428,17 @@ this &amp;lt;inside chars&amp;gt; &amp;amp; **bold** &amp;quot;text&amp;quot; &a
         expected = [
             ParentNode(
                 "ol",
-                [
-                    ParentNode(
-                        "li", [ParentNode("p", [LeafNode(None, "A simple list", None)])]
-                    )
-                ],
+                [ParentNode("li", [LeafNode(None, "A simple list", None)])],
             ),
             ParentNode(
                 "ol",
                 [
-                    ParentNode(
-                        "li",
-                        [ParentNode("p", [LeafNode(None, "Multilist with", None)])],
-                    ),
+                    ParentNode("li", [LeafNode(None, "Multilist with", None)]),
                     ParentNode(
                         "li",
                         [
-                            ParentNode(
-                                "p",
-                                [
-                                    LeafNode(None, "formatting like ", None),
-                                    LeafNode("b", "this", None),
-                                ],
-                            )
+                            LeafNode(None, "formatting like ", None),
+                            LeafNode("b", "this", None),
                         ],
                     ),
                 ],
