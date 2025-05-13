@@ -16,6 +16,10 @@ class MazeCell:
         self.has_right_wall = True
         self.has_top_wall = True
         self.has_bottom_wall = True
+        self.__x1 = None
+        self.__y1 = None
+        self.__x2 = None
+        self.__y2 = None
         self.__window = window
 
     def draw(self, x1: int, y1: int, x2: int, y2: int):
@@ -37,6 +41,11 @@ class MazeCell:
             "x2 and y2 must be less than or equal to the window width and height"
         )
 
+        self.__x1 = x1
+        self.__y1 = y1
+        self.__x2 = x2
+        self.__y2 = y2
+
         if self.has_left_wall:
             line = Line(Point(x1, y1), Point(x1, y2))
             self.__window.draw_line(line)
@@ -49,3 +58,21 @@ class MazeCell:
         if self.has_bottom_wall:
             line = Line(Point(x1, y2), Point(x2, y2))
             self.__window.draw_line(line)
+
+    def draw_move(self, to_cell: "MazeCell", undo: bool = False):
+        """Draw a move from this cell to another cell.
+
+        Args:
+            to_cell: The cell to move to.
+            undo: Whether to undo the move. Denoted by "gray" color line, else "red".
+        """
+        line = Line(Point(*self.get_center()), Point(*to_cell.get_center()))
+        self.__window.draw_line(line, "gray" if undo else "red", 1)
+
+    def get_center(self) -> tuple[int, int]:
+        """Get the center of the cell.
+
+        Returns:
+            The center of the cell.
+        """
+        return ((self.__x1 + self.__x2) / 2, (self.__y1 + self.__y2) / 2)
