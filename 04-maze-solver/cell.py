@@ -140,8 +140,8 @@ class Maze:
         """
         x1 = self.__x1 + col * self.__cell_size_x
         y1 = self.__y1 + row * self.__cell_size_y
-        x2 = self.__x1 + (col + 1) * self.__cell_size_x
-        y2 = self.__y1 + (row + 1) * self.__cell_size_y
+        x2 = x1 + self.__cell_size_x
+        y2 = y1 + self.__cell_size_y
 
         self.__cells[col][row].draw(x1, y1, x2, y2)
         self._animate()
