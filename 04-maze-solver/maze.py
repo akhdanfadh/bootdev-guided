@@ -33,6 +33,9 @@ class MazeCell:
             x2: The x-coordinate of the right edge of the cell.
             y2: The y-coordinate of the bottom edge of the cell.
         """
+        if self.__window is None:
+            return
+
         assert x1 < x2 and y1 < y2, (
             "x1 must be less than x2 and y1 must be less than y2"
         )
@@ -91,7 +94,7 @@ class Maze:
         num_cols: int,
         cell_size_x: int,
         cell_size_y: int,
-        window: Window,
+        window: Window = None,
     ):
         """Initialize the maze.
 
@@ -138,6 +141,9 @@ class Maze:
             col: Horizontal index (x) of the cell in the grid
             row: Vertical index (y) of the cell in the grid
         """
+        if self.__window is None:
+            return
+
         x1 = self.__x1 + col * self.__cell_size_x
         y1 = self.__y1 + row * self.__cell_size_y
         x2 = x1 + self.__cell_size_x
@@ -148,5 +154,8 @@ class Maze:
 
     def _animate(self):
         """Visualize what the algorithms are doing in real time."""
+        if self.__window is None:
+            return
+
         self.__window.redraw()
         time.sleep(0.05)

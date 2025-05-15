@@ -1,0 +1,42 @@
+import unittest
+
+from graphics import Window
+from maze import Maze
+
+
+class Tests(unittest.TestCase):
+    def test_maze_create_cells(self):
+        num_cols = 12
+        num_rows = 10
+        m1 = Maze(0, 0, num_rows, num_cols, 10, 10)
+        self.assertEqual(
+            len(m1._Maze__cells),
+            num_cols,
+        )
+        self.assertEqual(
+            len(m1._Maze__cells[0]),
+            num_rows,
+        )
+
+    def test_maze_create_cells_different_size(self):
+        num_cols = 5
+        num_rows = 7
+        m2 = Maze(0, 0, num_rows, num_cols, 15, 15)
+        self.assertEqual(
+            len(m2._Maze__cells),
+            num_cols,
+        )
+        self.assertEqual(
+            len(m2._Maze__cells[0]),
+            num_rows,
+        )
+
+    def test_maze_larger_than_window(self):
+        win = Window(100, 100)
+        # Each cell is 60x60, 2x2 grid, so 120x120 > 100x100 window
+        with self.assertRaises(AssertionError):
+            Maze(0, 0, 2, 2, 60, 60, win)
+
+
+if __name__ == "__main__":
+    unittest.main()
