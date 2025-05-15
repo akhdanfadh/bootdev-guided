@@ -51,18 +51,17 @@ class MazeCell:
         self.__x2 = x2
         self.__y2 = y2
 
-        if self.has_left_wall:
-            line = Line(Point(x1, y1), Point(x1, y2))
-            self.__window.draw_line(line)
-        if self.has_right_wall:
-            line = Line(Point(x2, y1), Point(x2, y2))
-            self.__window.draw_line(line)
-        if self.has_top_wall:
-            line = Line(Point(x1, y1), Point(x2, y1))
-            self.__window.draw_line(line)
-        if self.has_bottom_wall:
-            line = Line(Point(x1, y2), Point(x2, y2))
-            self.__window.draw_line(line)
+        line = Line(Point(x1, y1), Point(x1, y2))
+        self.__window.draw_line(line, "black" if self.has_left_wall else "white")
+
+        line = Line(Point(x2, y1), Point(x2, y2))
+        self.__window.draw_line(line, "black" if self.has_right_wall else "white")
+
+        line = Line(Point(x1, y1), Point(x2, y1))
+        self.__window.draw_line(line, "black" if self.has_top_wall else "white")
+
+        line = Line(Point(x1, y2), Point(x2, y2))
+        self.__window.draw_line(line, "black" if self.has_bottom_wall else "white")
 
     def draw_move(self, to_cell: "MazeCell", undo: bool = False):
         """Draw a move from this cell to another cell.
@@ -134,6 +133,9 @@ class Maze:
             for row in range(self.__num_rows):
                 self._draw_cell(col, row)
 
+        # Making entrance and exit
+        self._break_entrance_and_exit()
+
     def _draw_cell(self, col: int, row: int):
         """Calculate the x/y position of a cell.
 
@@ -151,6 +153,19 @@ class Maze:
 
         self.__cells[col][row].draw(x1, y1, x2, y2)
         self._animate()
+
+    def _break_entrance_and_exit(self):
+        """Break the walls for maze entrance and exit.
+
+        The entrance is always at the top of the top-left cell, while
+        the exit is always at the bottom of the bottom-right cell.
+        """
+        self.__cells[0][0].has_top_wall = False  # entrance
+        self._draw_cell(0, 0)  # redraw the canvas
+
+        exit_col, exit_row = self.__num_cols - 1, self.__num_rows - 1
+        self.__cells[exit_col][exit_row].has_bottom_wall = False  # exit
+        self._draw_cell(exit_col, exit_row)
 
     def _animate(self):
         """Visualize what the algorithms are doing in real time."""
