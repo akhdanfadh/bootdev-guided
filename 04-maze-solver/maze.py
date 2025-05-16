@@ -97,6 +97,7 @@ class Maze:
         cell_size_y: int,
         window: Window = None,
         seed: int = None,
+        animation_speed: float = 0.05,
     ):
         """Initialize the maze.
 
@@ -116,6 +117,7 @@ class Maze:
         self.__cell_size_x = cell_size_x
         self.__cell_size_y = cell_size_y
         self.__window = window
+        self.__animation_speed = animation_speed
         if seed:
             random.seed(seed)
 
@@ -230,4 +232,4 @@ class Maze:
             return
 
         self.__window.redraw()
-        time.sleep(0.05)
+        time.sleep(self.__animation_speed)
