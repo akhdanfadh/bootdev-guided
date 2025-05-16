@@ -146,6 +146,9 @@ class Maze:
         # Break walls
         self._break_walls_recursive(0, 0)
 
+        # Reset visited cells
+        self._reset_cells_visited()
+
     def _draw_cell(self, col: int, row: int):
         """Calculate the x/y position of a cell.
 
@@ -163,6 +166,12 @@ class Maze:
 
         self.__cells[col][row].draw(x1, y1, x2, y2)
         self._animate()
+
+    def _reset_cells_visited(self):
+        """Reset the visited attribute for all cells."""
+        for row in self.__cells:
+            for cell in row:
+                cell.visited = False
 
     def _break_entrance_and_exit(self):
         """Break the walls for maze entrance and exit.
