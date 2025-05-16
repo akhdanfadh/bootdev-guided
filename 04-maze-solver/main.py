@@ -3,28 +3,16 @@ from maze import Maze, MazeCell
 
 
 def main():
-    win = Window(800, 600)
+    num_rows = 12
+    num_cols = 16
+    margin = 50
+    screen_x = 800
+    screen_y = 600
+    cell_size_x = (screen_x - 2 * margin) / num_cols
+    cell_size_y = (screen_y - 2 * margin) / num_rows
+    win = Window(screen_x, screen_y)
 
-    cell = MazeCell(win)
-    cell.has_top_wall = False
-    cell.has_right_wall = False
-    cell.draw(50, 100, 100, 150)
-
-    cell2 = MazeCell(win)
-    cell2.has_left_wall = False
-    cell2.has_right_wall = False
-    cell2.draw(100, 100, 200, 150)
-
-    cell.draw_move(cell2, True)
-
-    cell = MazeCell(win)
-    cell.has_left_wall = False
-    cell.has_bottom_wall = False
-    cell.draw(200, 100, 250, 150)
-
-    cell2.draw_move(cell, False)
-
-    Maze(50, 200, 5, 10, 50, 50, win)
+    Maze(margin, margin, num_rows, num_cols, cell_size_x, cell_size_y, win, seed=22)
 
     win.wait_for_close()
 

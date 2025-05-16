@@ -1,3 +1,4 @@
+import random
 import time
 
 from graphics import Line, Point, Window
@@ -18,6 +19,7 @@ class MazeCell:
         self.has_right_wall = True
         self.has_top_wall = True
         self.has_bottom_wall = True
+        self.visited = False
         self.__x1 = None
         self.__y1 = None
         self.__x2 = None
@@ -94,6 +96,7 @@ class Maze:
         cell_size_x: int,
         cell_size_y: int,
         window: Window = None,
+        seed: int = None,
     ):
         """Initialize the maze.
 
@@ -113,6 +116,8 @@ class Maze:
         self.__cell_size_x = cell_size_x
         self.__cell_size_y = cell_size_y
         self.__window = window
+        if seed:
+            random.seed(seed)
 
         self.__cells: list[list[MazeCell]] = None
         self._create_cells()
@@ -135,6 +140,9 @@ class Maze:
 
         # Making entrance and exit
         self._break_entrance_and_exit()
+
+        # Break walls
+        self._break_walls_recursive(0, 0)
 
     def _draw_cell(self, col: int, row: int):
         """Calculate the x/y position of a cell.
@@ -166,6 +174,55 @@ class Maze:
         exit_col, exit_row = self.__num_cols - 1, self.__num_rows - 1
         self.__cells[exit_col][exit_row].has_bottom_wall = False  # exit
         self._draw_cell(exit_col, exit_row)
+
+    def _break_walls_recursive(self, col: int, row: int):
+        """A depth-first traversal through the cells to break down walls."""
+        current_cell = self.__cells[col][row]
+        current_cell.visited = True
+
+        while True:
+            # Get unvisited neighbors
+            neighbors = self._get_adjacent_cells(col, row)
+            unvisited = [
+                (direction, cell) for direction, cell in neighbors if not cell.visited
+            ]
+
+            # If no unvisited neighbors, update drawing of current cell and break loop
+            if not unvisited:
+                self._draw_cell(col, row)
+                return
+
+            # Choose random unvisited neighbor and break walls in between
+            direction, next_cell = random.choice(unvisited)
+            if direction == "top":
+                next_cell.has_bottom_wall = False
+                current_cell.has_top_wall = False
+                self._break_walls_recursive(col, row - 1)
+            elif direction == "left":
+                next_cell.has_right_wall = False
+                current_cell.has_left_wall = False
+                self._break_walls_recursive(col - 1, row)
+            elif direction == "right":
+                next_cell.has_left_wall = False
+                current_cell.has_right_wall = False
+                self._break_walls_recursive(col + 1, row)
+            elif direction == "bottom":
+                next_cell.has_top_wall = False
+                current_cell.has_bottom_wall = False
+                self._break_walls_recursive(col, row + 1)
+
+    def _get_adjacent_cells(self, col: int, row: int) -> list[tuple[str, MazeCell]]:
+        """Get all adjacent cells for a current cell."""
+        neighbors = []
+        if row > 0:  # top
+            neighbors.append(("top", self.__cells[col][row - 1]))
+        if col > 0:  # left
+            neighbors.append(("left", self.__cells[col - 1][row]))
+        if row < self.__num_rows - 1:  # bottom
+            neighbors.append(("bottom", self.__cells[col][row + 1]))
+        if col < self.__num_cols - 1:  # right
+            neighbors.append(("right", self.__cells[col + 1][row]))
+        return neighbors
 
     def _animate(self):
         """Visualize what the algorithms are doing in real time."""
