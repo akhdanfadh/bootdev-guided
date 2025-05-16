@@ -124,6 +124,60 @@ class Maze:
         self.__cells: list[list[MazeCell]] = None
         self._create_cells()
 
+    def solve(self) -> bool:
+        """Solve the maze using a depth-first search algorithm."""
+        self._reset_cells_visited()
+        return self._solve_recursive(0, 0)
+
+    def _solve_recursive(self, col: int, row: int) -> bool:
+        """A depth-first traversal through the cells to solve the maze."""
+        self._animate()
+
+        current_cell = self.__cells[col][row]
+        current_cell.visited = True
+        if col == self.__num_cols - 1 and row == self.__num_rows - 1:
+            return True  # break if we're in the end/exit cell
+
+        # Valid cell to go: adjacent, not visited, no wall
+        neighbors = self._get_adjacent_cells(col, row)
+        neighbors = [
+            (direction, cell) for direction, cell in neighbors if not cell.visited
+        ]
+        for direction, next_cell in neighbors:
+            # Try moving to each neighbor if there is no wall in that direction
+            if direction == "top" and not current_cell.has_top_wall:
+                current_cell.draw_move(next_cell)
+                result = self._solve_recursive(col, row - 1)
+                if not result:
+                    current_cell.draw_move(
+                        next_cell, undo=True
+                    )  # Undo move if dead end
+                else:
+                    return True
+            if direction == "left" and not current_cell.has_left_wall:
+                current_cell.draw_move(next_cell)
+                result = self._solve_recursive(col - 1, row)
+                if not result:
+                    current_cell.draw_move(next_cell, undo=True)
+                else:
+                    return True
+            if direction == "right" and not current_cell.has_right_wall:
+                current_cell.draw_move(next_cell)
+                result = self._solve_recursive(col + 1, row)
+                if not result:
+                    current_cell.draw_move(next_cell, undo=True)
+                else:
+                    return True
+            if direction == "bottom" and not current_cell.has_bottom_wall:
+                current_cell.draw_move(next_cell)
+                result = self._solve_recursive(col, row + 1)
+                if not result:
+                    current_cell.draw_move(next_cell, undo=True)
+                else:
+                    return True
+        # No path found from this cell
+        return False
+
     def _create_cells(self):
         """Create the cells in the maze and draw them on the window.
 
