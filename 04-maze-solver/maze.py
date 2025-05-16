@@ -204,6 +204,8 @@ class Maze:
                 return
 
             # Choose random unvisited neighbor and break walls in between
+            direction: str
+            next_cell: MazeCell
             direction, next_cell = random.choice(unvisited)
             if direction == "top":
                 next_cell.has_bottom_wall = False
