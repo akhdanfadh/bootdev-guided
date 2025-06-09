@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 from google import genai
 from google.genai import types
 
-from functions.schema import schema_get_files_info
+from functions.get_files_info import schema_get_files_info
 
 MODEL = "gemini-2.0-flash-001"
 SYSTEM_PROMPT = """
