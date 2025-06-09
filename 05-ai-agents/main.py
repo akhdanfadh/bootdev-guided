@@ -41,32 +41,52 @@ AVAILABLE_FUNCTIONS = types.Tool(
 PERMITTED_DIR = "./calculator"
 
 
-def call_llm(client: genai.Client, messages: list[types.Content], verbose: bool = False):
-    response = client.models.generate_content(
-        model=MODEL,
-        contents=messages,
-        config=types.GenerateContentConfig(
-            system_instruction=SYSTEM_PROMPT, tools=[AVAILABLE_FUNCTIONS]
-        ),
-    )
+def call_llm(
+    client: genai.Client,
+    messages: list[types.Content],
+    verbose: bool = False,
+    max_iterations: int = 20,
+):
+    """Call the LLM and handle function calls."""
+    while max_iterations > 0:
+        response = client.models.generate_content(
+            model=MODEL,
+            contents=messages,
+            config=types.GenerateContentConfig(
+                system_instruction=SYSTEM_PROMPT, tools=[AVAILABLE_FUNCTIONS]
+            ),
+        )
+        if verbose:
+            print(f"Prompt tokens: {response.usage_metadata.prompt_token_count}")
+            print(f"Response tokens: {response.usage_metadata.candidates_token_count}")
 
-    if verbose:
-        print(f"Prompt tokens: {response.usage_metadata.prompt_token_count}")
-        print(f"Response tokens: {response.usage_metadata.candidates_token_count}")
+        # Add response variations returned by the model,
+        # i.e. the equivalent of "I want to call get_files_info..."
+        if response.candidates:
+            for candidate in response.candidates:
+                messages.append(candidate.content)
 
-    if response.function_calls:
-        for call in response.function_calls:
-            content = call_function(call, verbose)
-            # Get function response
-            if not content.parts[0].function_response.response:
-                raise Exception(f"Function {call.name} returned an error")
-            if verbose:
-                print(f"-> {content.parts[0].function_response.response}")
-    else:
-        print(f"Response: {response.text}")
+        # Handle function calls
+        if response.function_calls:
+            for call in response.function_calls:
+                content = call_function(call, verbose)
+                # Get function response
+                if not content.parts[0].function_response.response:
+                    raise Exception(f"Function {call.name} returned an error")
+                if verbose:
+                    print(f"-> {content.parts[0].function_response.response}")
+                messages.append(content)
+
+        # If no longer function calls, agent is done
+        else:
+            print(f"Final response:\n{response.text}")
+            break
+
+        max_iterations -= 1
 
 
-def call_function(function_call: types.FunctionCall, verbose: bool = False):
+def call_function(function_call: types.FunctionCall, verbose: bool = False) -> types.Content:
+    """Call a function and return the result."""
     name, args = function_call.name, function_call.args
     if verbose:
         print(f"Calling function: {name}({args})")
