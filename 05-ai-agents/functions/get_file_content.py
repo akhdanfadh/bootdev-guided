@@ -1,6 +1,22 @@
 from pathlib import Path
 
+from google.genai import types
+
 MAX_CHARS = 10000
+
+schema_get_file_content = types.FunctionDeclaration(
+    name="get_file_content",
+    description="Reads and returns the content of a file, constrained to the permitted working directory",
+    parameters=types.Schema(
+        type=types.Type.OBJECT,
+        properties={
+            "file_path": types.Schema(
+                type=types.Type.STRING,
+                description="The path to the file to read, relative to the permitted working directory, or absolute path",
+            )
+        },
+    ),
+)
 
 
 def get_file_content(permitted_dir: str, file_path: str) -> str:

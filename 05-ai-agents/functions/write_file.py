@@ -1,5 +1,25 @@
 from pathlib import Path
 
+from google.genai import types
+
+schema_write_file = types.FunctionDeclaration(
+    name="write_file",
+    description="Writes content to a file, constrained to the permitted working directory",
+    parameters=types.Schema(
+        type=types.Type.OBJECT,
+        properties={
+            "file_path": types.Schema(
+                type=types.Type.STRING,
+                description="The path where to write the file, relative to the permitted working directory, or absolute path",
+            ),
+            "content": types.Schema(
+                type=types.Type.STRING,
+                description="The content to write to the file",
+            ),
+        },
+    ),
+)
+
 
 def write_file(permitted_dir: str, file_path: str, content: str) -> str:
     """Write content to a file only if it is in permitted directory."""
