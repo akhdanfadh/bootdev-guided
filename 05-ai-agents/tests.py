@@ -1,17 +1,21 @@
-from functions.write_file import write_file
+from functions.run_python import run_python_file
 
 
 def run_tests():
-    print("Test 1: regular file")
-    print(write_file("calculator", "lorem.txt", "wait, this isn't lorem ipsum"))
+    print("Test 1: Run main.py")
+    print(run_python_file("calculator", "main.py"))
     print()
 
-    print("Test 2: not exist file")
-    print(write_file("calculator", "pkg/morelorem.txt", "lorem ipsum dolor sit amet"))
+    print("Test 2: Run tests.py")
+    print(run_python_file("calculator", "tests.py"))
     print()
 
-    print("Test 3: not in permitted")
-    print(write_file("calculator", "/tmp/temp.txt", "this should not be allowed"))
+    print("Test 3: Run file outside permitted directory")
+    print(run_python_file("calculator", "../main.py"))
+    print()
+
+    print("Test 4: Run nonexistent file")
+    print(run_python_file("calculator", "nonexistent.py"))
 
 
 if __name__ == "__main__":
