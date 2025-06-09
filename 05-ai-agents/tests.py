@@ -1,25 +1,21 @@
-from functions.get_files_info import get_files_info
+from functions.get_file_content import get_file_content
 
 
 def run_tests():
-    print("Test 1: Current directory (.)")
-    print(get_files_info("calculator", "."))
+    print("Test 1: >10000 chars lorem ipsum")
+    print(get_file_content("calculator", "lorem.txt"))
     print()
 
-    print("Test 2: pkg directory")
-    print(get_files_info("calculator", "pkg"))
+    print("Test 2: regular file")
+    print(get_file_content("calculator", "main.py"))
     print()
 
-    print("Test 3: /bin directory (should error)")
-    print(get_files_info("calculator", "/bin"))
+    print("Test 3: file in a folder")
+    print(get_file_content("calculator", "pkg/calculator.py"))
     print()
 
-    print("Test 4: Parent directory (should error)")
-    print(get_files_info("calculator", "../"))
-    print()
-
-    print("Test 5: Empty directory")
-    print(get_files_info("calculator", "empty_dir"))
+    print("Test 4: not in permitted")
+    print(get_file_content("calculator", "/bin/cat"))
 
 
 if __name__ == "__main__":
