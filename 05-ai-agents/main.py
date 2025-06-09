@@ -5,10 +5,17 @@ from dotenv import load_dotenv
 from google import genai
 from google.genai import types
 
-from functions.get_file_content import schema_get_file_content
-from functions.get_files_info import schema_get_files_info
-from functions.run_python import schema_run_python_file
-from functions.write_file import schema_write_file
+from functions.get_file_content import get_file_content, schema_get_file_content
+from functions.get_files_info import get_files_info, schema_get_files_info
+from functions.run_python import run_python_file, schema_run_python_file
+from functions.write_file import schema_write_file, write_file
+
+FUNCTION_MAP = {
+    "get_files_info": get_files_info,
+    "get_file_content": get_file_content,
+    "run_python_file": run_python_file,
+    "write_file": write_file,
+}
 
 MODEL = "gemini-2.0-flash-001"
 SYSTEM_PROMPT = """
@@ -31,6 +38,7 @@ AVAILABLE_FUNCTIONS = types.Tool(
         schema_write_file,
     ]
 )
+PERMITTED_DIR = "./calculator"
 
 
 def call_llm(client: genai.Client, messages: list[types.Content], verbose: bool = False):
@@ -48,9 +56,45 @@ def call_llm(client: genai.Client, messages: list[types.Content], verbose: bool 
 
     if response.function_calls:
         for call in response.function_calls:
-            print(f"Calling function: {call.name}({call.args})")
+            content = call_function(call, verbose)
+            # Get function response
+            if not content.parts[0].function_response.response:
+                raise Exception(f"Function {call.name} returned an error")
+            if verbose:
+                print(f"-> {content.parts[0].function_response.response}")
     else:
         print(f"Response: {response.text}")
+
+
+def call_function(function_call: types.FunctionCall, verbose: bool = False):
+    name, args = function_call.name, function_call.args
+    if verbose:
+        print(f"Calling function: {name}({args})")
+    else:
+        print(f" - Calling function: {name}")
+
+    # Check if function is available
+    if name not in FUNCTION_MAP:
+        return types.Content(
+            role="tool",
+            parts=[
+                types.Part.from_function_response(
+                    name=name,
+                    response={"error": f"Unknown function: {name}"},
+                )
+            ],
+        )
+    # Call function
+    result = FUNCTION_MAP[name](PERMITTED_DIR, **args)
+    return types.Content(
+        role="tool",
+        parts=[
+            types.Part.from_function_response(
+                name=name,
+                response={"result": result},
+            )
+        ],
+    )
 
 
 def main():
