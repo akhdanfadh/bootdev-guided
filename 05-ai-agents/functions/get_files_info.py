@@ -29,4 +29,7 @@ def get_files_info(permitted_dir: str, target_dir: str = None) -> str:
         except Exception as _:
             file_size = "(Error: Getting the file size)"
         file_path.append(f"- {file.name}: file_size={file_size}, is_dir={file.is_dir()}")
+
+    if not file_path:
+        return f'Directory "{target_dir}" is empty'
     return "\n".join(file_path)

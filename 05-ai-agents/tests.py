@@ -16,6 +16,10 @@ def run_tests():
 
     print("Test 4: Parent directory (should error)")
     print(get_files_info("calculator", "../"))
+    print()
+
+    print("Test 5: Empty directory")
+    print(get_files_info("calculator", "empty_dir"))
 
 
 if __name__ == "__main__":
