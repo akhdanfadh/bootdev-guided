@@ -32,10 +32,12 @@ def call_llm(client: genai.Client, messages: list[types.Content], verbose: bool 
     if verbose:
         print(f"Prompt tokens: {response.usage_metadata.prompt_token_count}")
         print(f"Response tokens: {response.usage_metadata.candidates_token_count}")
-        if response.function_calls:
-            for call in response.function_calls:
-                print(f"Calling function: {call.name}({call.args})")
-    print(f"Response: {response.text}")
+
+    if response.function_calls:
+        for call in response.function_calls:
+            print(f"Calling function: {call.name}({call.args})")
+    else:
+        print(f"Response: {response.text}")
 
 
 def main():
