@@ -2,8 +2,8 @@ import subprocess
 from pathlib import Path
 
 
-def run_python_file(permitted_dir: str, file_path: str) -> str:
-    """Write content to a file only if it is in permitted directory."""
+def run_python_file(permitted_dir: str, file_path: str, args: list[str] = None) -> str:
+    """Execute a Python file only if it is in permitted directory."""
     try:
         permitted_dir = Path(permitted_dir).resolve(strict=True)
     except (OSError, RuntimeError) as e:
@@ -27,8 +27,11 @@ def run_python_file(permitted_dir: str, file_path: str) -> str:
         return f'Error: Cannot access file "{file_path}": {str(e)}'
 
     try:
+        command = ["python3", str(file_path)]
+        if args:
+            command.extend(args)
         execution = subprocess.run(
-            ["python3", str(file_path)], timeout=30, capture_output=True, cwd=permitted_dir
+            command, text=True, timeout=30, capture_output=True, cwd=permitted_dir
         )
         output = []
         if execution.stdout:
