@@ -56,9 +56,9 @@ def run_python_file(permitted_dir: str, file_path: str, args: list[str] = None) 
         )
         output = []
         if execution.stdout:
-            output.append(f"STDOUT: {execution.stdout.decode()}")
+            output.append(f"STDOUT: {execution.stdout}")
         if execution.stderr:
-            output.append(f"STDERR: {execution.stderr.decode()}")
+            output.append(f"STDERR: {execution.stderr}")
         if execution.returncode != 0:
             output.append(f"Process exited with code {execution.returncode}")
         return "\n".join(output) if output else "No output produced."
