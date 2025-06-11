@@ -4,7 +4,7 @@ package commands
 type Command struct {
 	Name        string
 	Description string
-	Callback    func() error
+	Callback    func(args []string) error
 }
 
 var registry = make(map[string]Command)

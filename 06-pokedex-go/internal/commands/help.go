@@ -11,7 +11,7 @@ func init() {
 }
 
 // Help handles the help command
-func Help() error {
+func Help(args []string) error {
 	fmt.Println("Welcome to the Pokedex!")
 	fmt.Println("Usage:")
 	fmt.Println()
