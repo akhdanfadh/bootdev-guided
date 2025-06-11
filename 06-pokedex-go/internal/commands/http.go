@@ -1,0 +1,20 @@
+package commands
+
+import (
+	"encoding/json"
+	"net/http"
+)
+
+// getAndDecode is a helper function to get a JSON response from a URL and decode it into a struct
+func getAndDecode[T any](url string, v *T) error {
+	res, err := http.Get(url)
+	if err != nil {
+		return err
+	}
+	defer res.Body.Close()
+
+	if err := json.NewDecoder(res.Body).Decode(v); err != nil {
+		return err
+	}
+	return nil
+}
