@@ -2,6 +2,12 @@
 
 Pokedex is a command-line [REPL](https://en.wikipedia.org/wiki/Read%E2%80%93eval%E2%80%93print_loop) that lets us look up information about Pokemon - things like their name, type, and stats - using the incredible [PokéAPI](https://pokeapi.co/).
 
+To build the project, run:
+
+```bash
+go build -o pokedex cmd/pokedex/main.go
+```
+
 ## Learning Goals
 
 - Learn how to parse JSON in Go
