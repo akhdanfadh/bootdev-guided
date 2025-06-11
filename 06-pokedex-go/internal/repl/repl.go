@@ -23,6 +23,7 @@ func StartRepl() {
 		command, exists := commands.GetCommand(words[0])
 		if !exists {
 			fmt.Println("Unknown command")
+			fmt.Println()
 			continue
 		}
 
