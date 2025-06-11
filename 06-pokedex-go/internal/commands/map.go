@@ -29,7 +29,7 @@ func init() {
 
 // Map handles the map command
 func Map(args []string) error {
-	var locationAreas NamedApiResourceList
+	var locationAreas LocationAreaList
 	if mapState.Next == "" {
 		return errors.New("end of entries")
 	}
@@ -50,7 +50,7 @@ func Map(args []string) error {
 
 // MapB handles the mapb command
 func MapB(args []string) error {
-	var locationAreas NamedApiResourceList
+	var locationAreas LocationAreaList
 	if mapState.Previous == "" {
 		return errors.New("no earlier entries")
 	}
