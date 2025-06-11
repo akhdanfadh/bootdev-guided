@@ -2,6 +2,7 @@ package commands
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 )
 
@@ -12,6 +13,10 @@ func getAndDecode[T any](url string, v *T) error {
 		return err
 	}
 	defer res.Body.Close()
+
+	if res.StatusCode != http.StatusOK {
+		return fmt.Errorf("API request failed with status %d", res.StatusCode)
+	}
 
 	if err := json.NewDecoder(res.Body).Decode(v); err != nil {
 		return err
