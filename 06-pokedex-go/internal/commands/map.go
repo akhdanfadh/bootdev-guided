@@ -3,6 +3,8 @@ package commands
 import (
 	"errors"
 	"fmt"
+
+	"github.com/akhdanfadh/bootdev-guided/06-pokedex-go/internal/pokeapi"
 )
 
 var mapState struct {
@@ -11,7 +13,7 @@ var mapState struct {
 }
 
 func init() {
-	mapState.Next = BASE_URL + "/location-area?limit=20"
+	mapState.Next = pokeapi.BASE_URL + "/location-area?limit=20"
 	mapState.Previous = ""
 
 	RegisterCommand("map", Command{
@@ -29,11 +31,11 @@ func init() {
 
 // Map handles the map command
 func Map(args []string) error {
-	var locationAreas LocationAreaList
+	var locationAreas pokeapi.LocationAreaList
 	if mapState.Next == "" {
 		return errors.New("end of entries")
 	}
-	err := getAndDecode(mapState.Next, &locationAreas)
+	err := pokeapi.GetAndDecode(mapState.Next, &locationAreas)
 	if err != nil {
 		return err
 	}
@@ -50,11 +52,11 @@ func Map(args []string) error {
 
 // MapB handles the mapb command
 func MapB(args []string) error {
-	var locationAreas LocationAreaList
+	var locationAreas pokeapi.LocationAreaList
 	if mapState.Previous == "" {
 		return errors.New("no earlier entries")
 	}
-	err := getAndDecode(mapState.Previous, &locationAreas)
+	err := pokeapi.GetAndDecode(mapState.Previous, &locationAreas)
 	if err != nil {
 		return err
 	}

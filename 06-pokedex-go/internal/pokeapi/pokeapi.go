@@ -1,4 +1,4 @@
-package commands
+package pokeapi
 
 // BASE_URL is the base URL for the PokeAPI (no trailing slash)
 const BASE_URL string = "https://pokeapi.co/api/v2"

@@ -1,4 +1,4 @@
-package commands
+package pokeapi
 
 import (
 	"encoding/json"
@@ -7,7 +7,7 @@ import (
 )
 
 // getAndDecode is a helper function to get a JSON response from a URL and decode it into a struct
-func getAndDecode[T any](url string, v *T) error {
+func GetAndDecode[T any](url string, v *T) error {
 	res, err := http.Get(url)
 	if err != nil {
 		return err

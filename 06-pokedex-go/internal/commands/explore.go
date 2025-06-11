@@ -3,6 +3,8 @@ package commands
 import (
 	"errors"
 	"fmt"
+
+	"github.com/akhdanfadh/bootdev-guided/06-pokedex-go/internal/pokeapi"
 )
 
 func init() {
@@ -19,9 +21,9 @@ func Explore(args []string) error {
 		return errors.New("usage: explore <location area>")
 	}
 
-	var locationArea LocationArea
-	fullUrl := BASE_URL + "/location-area/" + args[0]
-	err := getAndDecode(fullUrl, &locationArea)
+	var locationArea pokeapi.LocationArea
+	fullUrl := pokeapi.BASE_URL + "/location-area/" + args[0]
+	err := pokeapi.GetAndDecode(fullUrl, &locationArea)
 	if err != nil {
 		return err
 	}
