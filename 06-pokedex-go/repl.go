@@ -13,10 +13,10 @@ func startRepl() {
 		// prompt and user input
 		fmt.Print("Pokedex > ")
 		scanner.Scan()
-		input := scanner.Text()
-
-		// clean input and show the first word as command
-		words := cleanInput(input)
+		words := cleanInput(scanner.Text())
+		if len(words) == 0 {
+			continue
+		}
 		fmt.Printf("Your command was: %s\n", words[0])
 	}
 }
