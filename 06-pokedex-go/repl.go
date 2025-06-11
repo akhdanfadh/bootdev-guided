@@ -7,6 +7,13 @@ import (
 	"strings"
 )
 
+type cliCommand struct {
+	name        string
+	description string
+	callback    func() error
+}
+
+// Start the Pokedex REPL
 func startRepl() {
 	scanner := bufio.NewScanner(os.Stdin)
 	for {
@@ -19,19 +26,35 @@ func startRepl() {
 		}
 
 		// process based on command (first word)
-		switch cmd := words[0]; cmd {
-		case "exit":
-			commandExit()
-		case "help":
-			commandHelp()
-		default:
-			fmt.Printf("Your command was: %s\n", cmd)
+		command, exists := getCommandRegistry()[words[0]]
+		if !exists {
+			fmt.Println("Unknown command")
+			continue
+		}
+		err := command.callback()
+		if err != nil {
+			fmt.Println(err)
 		}
 	}
 }
 
-// Split the users input into "words" based on whitespace,
-// lowercase the input, and trim any leading or trailing whitespace.
+// Build and return supported commands
+func getCommandRegistry() map[string]cliCommand {
+	registry := make(map[string]cliCommand)
+	registry["exit"] = cliCommand{
+		name:        "exit",
+		description: "Exit the Pokedex",
+		callback:    commandExit,
+	}
+	registry["help"] = cliCommand{
+		name:        "help",
+		description: "Displays a help message",
+		callback:    commandHelp,
+	}
+	return registry
+}
+
+// Clean user input (trim whitespace and lowercase) and split to words
 func cleanInput(text string) []string {
 	return strings.Fields(strings.ToLower(strings.TrimSpace(text)))
 }
@@ -48,7 +71,8 @@ func commandHelp() error {
 	fmt.Println("Welcome to the Pokedex!")
 	fmt.Println("Usage:")
 	fmt.Println()
-	fmt.Println("help: Displays a help message")
-	fmt.Println("exit: Exit the Pokedex")
+	for _, command := range getCommandRegistry() {
+		fmt.Printf("%s: %s\n", command.name, command.description)
+	}
 	return nil
 }
