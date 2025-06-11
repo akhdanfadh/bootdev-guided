@@ -29,6 +29,7 @@ func StartRepl() {
 		if err := command.Callback(); err != nil {
 			fmt.Printf("Error: %v\n", err)
 		}
+		fmt.Println()
 	}
 }
 
