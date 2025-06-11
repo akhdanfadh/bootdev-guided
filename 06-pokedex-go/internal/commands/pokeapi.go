@@ -12,3 +12,15 @@ type LocationAreaList struct {
 		Url  string `json:"url"`
 	} `json:"results"`
 }
+
+// LocationArea is a struct that represents a location area and its Pokemon encounters
+type LocationArea struct {
+	Id          int    `json:"id"`
+	Name        string `json:"name"`
+	PokemonList []struct {
+		Pokemon struct {
+			Name string `json:"name"`
+			Url  string `json:"url"`
+		} `json:"pokemon"`
+	} `json:"pokemon_encounters"`
+}
