@@ -27,7 +27,7 @@ func StartRepl() {
 			continue
 		}
 
-		if err := command.Callback(words[1:]); err != nil {
+		if err := command.Execute(words[1:]); err != nil {
 			fmt.Printf("Error: %v\n", err)
 		}
 		fmt.Println()

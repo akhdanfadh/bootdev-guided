@@ -9,20 +9,31 @@ import (
 	"github.com/akhdanfadh/bootdev-guided/06-pokedex-go/internal/pokeapi"
 )
 
-var caughtPokemon []string
+// CatchCommand implements the catch command
+type CatchCommand struct {
+	caughtPokemon *[]string
+}
+
+var sharedCaughtPokemon = &[]string{}
 
 func init() {
-	RegisterCommand("catch", Command{
-		Name:        "catch",
-		Description: "Attempt to catch a Pokemon",
-		Callback:    Catch,
-	})
+	RegisterCommand("catch", &CatchCommand{caughtPokemon: sharedCaughtPokemon})
+}
+
+// Name returns the command name
+func (c *CatchCommand) Name() string {
+	return "catch"
+}
+
+// Description returns the command description
+func (c *CatchCommand) Description() string {
+	return "Attempt to catch a Pokemon"
 }
 
 // catch is a helper function to catch a Pokemon based on its base experience.
 // It uses a sigmoid function with pre-calculated parameters based on overall
 // base experiences to calculate the catch probability for individual Pokemon.
-func catch(pokemon pokeapi.Pokemon) bool {
+func (c *CatchCommand) catch(pokemon pokeapi.Pokemon) bool {
 	// Calculate the individual catch probability
 	sigmoidParams := pokeapi.GetCatchPokemonParams()
 	catchProb := 1 / (1 + math.Exp(sigmoidParams.Steepness*(float64(pokemon.BaseExperience)-sigmoidParams.Midpoint)))
@@ -32,8 +43,8 @@ func catch(pokemon pokeapi.Pokemon) bool {
 	return randomRoll < catchProb
 }
 
-// Catch handles the catch command
-func Catch(args []string) error {
+// Execute handles the catch command execution
+func (c *CatchCommand) Execute(args []string) error {
 	if len(args) != 1 {
 		return errors.New("usage: catch <pokemon>")
 	}
@@ -46,9 +57,9 @@ func Catch(args []string) error {
 	}
 
 	fmt.Printf("Throwing a Pokeball at %s...\n", pokemon.Name)
-	if catch(pokemon) {
+	if c.catch(pokemon) {
 		fmt.Printf("%s was caught!\n", pokemon.Name)
-		caughtPokemon = append(caughtPokemon, pokemon.Name)
+		*c.caughtPokemon = append(*c.caughtPokemon, pokemon.Name)
 	} else {
 		fmt.Printf("%s escaped!\n", pokemon.Name)
 	}

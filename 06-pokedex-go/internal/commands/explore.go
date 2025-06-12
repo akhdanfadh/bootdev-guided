@@ -7,16 +7,25 @@ import (
 	"github.com/akhdanfadh/bootdev-guided/06-pokedex-go/internal/pokeapi"
 )
 
+// ExploreCommand implements the explore command
+type ExploreCommand struct{}
+
 func init() {
-	RegisterCommand("explore", Command{
-		Name:        "explore",
-		Description: "Given location area, display all Pokemon there",
-		Callback:    Explore,
-	})
+	RegisterCommand("explore", &ExploreCommand{})
 }
 
-// Explore handles the explore command
-func Explore(args []string) error {
+// Name returns the command name
+func (e *ExploreCommand) Name() string {
+	return "explore"
+}
+
+// Description returns the command description
+func (e *ExploreCommand) Description() string {
+	return "Given location area, display all Pokemon there"
+}
+
+// Execute handles the explore command execution
+func (e *ExploreCommand) Execute(args []string) error {
 	if len(args) != 1 {
 		return errors.New("usage: explore <location area>")
 	}

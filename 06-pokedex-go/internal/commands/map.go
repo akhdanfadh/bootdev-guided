@@ -7,41 +7,55 @@ import (
 	"github.com/akhdanfadh/bootdev-guided/06-pokedex-go/internal/pokeapi"
 )
 
-var mapState struct {
+// MapCommand implements the map command
+type MapCommand struct {
+	state *mapStateData
+}
+
+// MapBackCommand implements the mapb command
+type MapBackCommand struct {
+	state *mapStateData
+}
+
+// mapStateData holds the shared state for map navigation
+type mapStateData struct {
 	Next     string
 	Previous string
 }
 
-func init() {
-	mapState.Next = pokeapi.BASE_URL + "/location-area?limit=20"
-	mapState.Previous = ""
-
-	RegisterCommand("map", Command{
-		Name:        "map",
-		Description: "Display the next 20 location areas",
-		Callback:    Map,
-	})
-
-	RegisterCommand("mapb", Command{
-		Name:        "mapb",
-		Description: "Display the previous 20 location areas",
-		Callback:    MapB,
-	})
+var sharedMapState = &mapStateData{
+	Next:     pokeapi.BASE_URL + "/location-area?limit=20",
+	Previous: "",
 }
 
-// Map handles the map command
-func Map(args []string) error {
+func init() {
+	RegisterCommand("map", &MapCommand{state: sharedMapState})
+	RegisterCommand("mapb", &MapBackCommand{state: sharedMapState})
+}
+
+// Name returns the command name
+func (m *MapCommand) Name() string {
+	return "map"
+}
+
+// Description returns the command description
+func (m *MapCommand) Description() string {
+	return "Display the next 20 location areas"
+}
+
+// Execute handles the map command execution
+func (m *MapCommand) Execute(args []string) error {
 	var locationAreas pokeapi.LocationAreaList
-	if mapState.Next == "" {
+	if m.state.Next == "" {
 		return errors.New("end of entries")
 	}
-	err := pokeapi.GetAndDecode(mapState.Next, &locationAreas)
+	err := pokeapi.GetAndDecode(m.state.Next, &locationAreas)
 	if err != nil {
 		return err
 	}
 
-	mapState.Next = locationAreas.Next
-	mapState.Previous = locationAreas.Previous
+	m.state.Next = locationAreas.Next
+	m.state.Previous = locationAreas.Previous
 
 	for _, locationArea := range locationAreas.Results {
 		fmt.Println(locationArea.Name)
@@ -50,19 +64,29 @@ func Map(args []string) error {
 	return nil
 }
 
-// MapB handles the mapb command
-func MapB(args []string) error {
+// Name returns the command name
+func (mb *MapBackCommand) Name() string {
+	return "mapb"
+}
+
+// Description returns the command description
+func (mb *MapBackCommand) Description() string {
+	return "Display the previous 20 location areas"
+}
+
+// Execute handles the mapb command execution
+func (mb *MapBackCommand) Execute(args []string) error {
 	var locationAreas pokeapi.LocationAreaList
-	if mapState.Previous == "" {
+	if mb.state.Previous == "" {
 		return errors.New("no earlier entries")
 	}
-	err := pokeapi.GetAndDecode(mapState.Previous, &locationAreas)
+	err := pokeapi.GetAndDecode(mb.state.Previous, &locationAreas)
 	if err != nil {
 		return err
 	}
 
-	mapState.Next = locationAreas.Next
-	mapState.Previous = locationAreas.Previous
+	mb.state.Next = locationAreas.Next
+	mb.state.Previous = locationAreas.Previous
 
 	for _, locationArea := range locationAreas.Results {
 		fmt.Println(locationArea.Name)

@@ -5,16 +5,25 @@ import (
 	"sort"
 )
 
+// HelpCommand implements the help command
+type HelpCommand struct{}
+
 func init() {
-	RegisterCommand("help", Command{
-		Name:        "help",
-		Description: "Displays a help message",
-		Callback:    Help,
-	})
+	RegisterCommand("help", &HelpCommand{})
 }
 
-// Help handles the help command
-func Help(args []string) error {
+// Name returns the command name
+func (h *HelpCommand) Name() string {
+	return "help"
+}
+
+// Description returns the command description
+func (h *HelpCommand) Description() string {
+	return "Displays a help message"
+}
+
+// Execute handles the help command execution
+func (h *HelpCommand) Execute(args []string) error {
 	fmt.Println("Welcome to the Pokedex!")
 	fmt.Println("Usage:")
 	fmt.Println()
@@ -28,7 +37,8 @@ func Help(args []string) error {
 	sort.Strings(keys)
 
 	for _, k := range keys {
-		fmt.Printf("%s: %s\n", commands[k].Name, commands[k].Description)
+		cmd := commands[k]
+		fmt.Printf("%s: %s\n", cmd.Name(), cmd.Description())
 	}
 	return nil
 }

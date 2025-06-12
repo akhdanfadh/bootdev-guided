@@ -8,22 +8,33 @@ import (
 	"github.com/akhdanfadh/bootdev-guided/06-pokedex-go/internal/pokeapi"
 )
 
-func init() {
-	RegisterCommand("inspect", Command{
-		Name:        "inspect",
-		Description: "Inspect a Pokemon that has been caught",
-		Callback:    Inspect,
-	})
+// InspectCommand implements the inspect command
+type InspectCommand struct {
+	caughtPokemon *[]string
 }
 
-// Inspect handles the inspect command
-func Inspect(args []string) error {
+func init() {
+	RegisterCommand("inspect", &InspectCommand{caughtPokemon: sharedCaughtPokemon})
+}
+
+// Name returns the command name
+func (i *InspectCommand) Name() string {
+	return "inspect"
+}
+
+// Description returns the command description
+func (i *InspectCommand) Description() string {
+	return "Inspect a Pokemon that has been caught"
+}
+
+// Execute handles the inspect command execution
+func (i *InspectCommand) Execute(args []string) error {
 	if len(args) != 1 {
 		return errors.New("usage: inspect <pokemon>")
 	}
 
 	pokemonName := args[0]
-	if !slices.Contains(caughtPokemon, pokemonName) {
+	if !slices.Contains(*i.caughtPokemon, pokemonName) {
 		// TODO: second argument may not be a valid Pokemon name
 		return errors.New("you have not caught that Pokemon")
 	}
