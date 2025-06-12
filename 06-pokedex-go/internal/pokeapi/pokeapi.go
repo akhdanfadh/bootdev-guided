@@ -27,9 +27,28 @@ type LocationArea struct {
 
 // Pokemon is a struct that represents a Pokemon
 type Pokemon struct {
-	Id             int    `json:"id"`
-	Name           string `json:"name"`
-	BaseExperience int    `json:"base_experience"`
+	Id             int           `json:"id"`
+	Name           string        `json:"name"`
+	BaseExperience int           `json:"base_experience"`
+	Height         int           `json:"height"`
+	Weight         int           `json:"weight"`
+	Stats          []PokemonStat `json:"stats"`
+	Types          []PokemonType `json:"types"`
+}
+
+// PokemonStat is a struct that represents a Pokemon stat
+type PokemonStat struct {
+	BaseStat int `json:"base_stat"`
+	Stat     struct {
+		Name string `json:"name"`
+	} `json:"stat"`
+}
+
+// PokemonType is a struct that represents a Pokemon type
+type PokemonType struct {
+	Type struct {
+		Name string `json:"name"`
+	} `json:"type"`
 }
 
 // CatchPokemonParams is the sigmoid parameters for catching Pokemon.

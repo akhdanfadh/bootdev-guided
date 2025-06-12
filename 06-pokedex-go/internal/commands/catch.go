@@ -9,6 +9,8 @@ import (
 	"github.com/akhdanfadh/bootdev-guided/06-pokedex-go/internal/pokeapi"
 )
 
+var caughtPokemon []string
+
 func init() {
 	RegisterCommand("catch", Command{
 		Name:        "catch",
@@ -46,6 +48,7 @@ func Catch(args []string) error {
 	fmt.Printf("Throwing a Pokeball at %s...\n", pokemon.Name)
 	if catch(pokemon) {
 		fmt.Printf("%s was caught!\n", pokemon.Name)
+		caughtPokemon = append(caughtPokemon, pokemon.Name)
 	} else {
 		fmt.Printf("%s escaped!\n", pokemon.Name)
 	}
