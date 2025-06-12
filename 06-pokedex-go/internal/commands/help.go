@@ -1,6 +1,9 @@
 package commands
 
-import "fmt"
+import (
+	"fmt"
+	"sort"
+)
 
 func init() {
 	RegisterCommand("help", Command{
@@ -16,8 +19,16 @@ func Help(args []string) error {
 	fmt.Println("Usage:")
 	fmt.Println()
 
-	for _, command := range GetAllCommands() {
-		fmt.Printf("%s: %s\n", command.Name, command.Description)
+	// Get all commands and sort them by key
+	commands := GetAllCommands()
+	keys := make([]string, 0, len(commands))
+	for k := range commands {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+
+	for _, k := range keys {
+		fmt.Printf("%s: %s\n", commands[k].Name, commands[k].Description)
 	}
 	return nil
 }
