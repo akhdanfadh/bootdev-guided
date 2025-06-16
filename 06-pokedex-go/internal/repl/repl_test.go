@@ -7,9 +7,9 @@ import (
 
 func TestCleanInput(t *testing.T) {
 	tests := []struct {
-		name string
-		input    string
-		want []string
+		name  string
+		input string
+		want  []string
 	}{
 		{
 			name:  "handles multiple whitespace types",
