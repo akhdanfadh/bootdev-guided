@@ -53,7 +53,7 @@ func (c *CatchCommand) Execute(args []string) error {
 	var pokemon pokeapi.Pokemon
 	err := pokeapi.GetAndDecode(fullUrl, &pokemon)
 	if err != nil {
-		return errors.New("could not find that Pokemon")
+		return err
 	}
 
 	fmt.Printf("Throwing a Pokeball at %s...\n", pokemon.Name)

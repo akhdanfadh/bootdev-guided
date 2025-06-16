@@ -24,7 +24,7 @@ type mapStateData struct {
 }
 
 var sharedMapState = &mapStateData{
-	Next:     pokeapi.BASE_URL + "/location-area?limit=20",
+	Next:     pokeapi.BASE_URL + "/location-area?offset=0&limit=20",
 	Previous: "",
 }
 
