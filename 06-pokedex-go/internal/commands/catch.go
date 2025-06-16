@@ -53,12 +53,13 @@ func (c *CatchCommand) Execute(args []string) error {
 	var pokemon pokeapi.Pokemon
 	err := pokeapi.GetAndDecode(fullUrl, &pokemon)
 	if err != nil {
-		return err
+		return errors.New("could not find that Pokemon")
 	}
 
 	fmt.Printf("Throwing a Pokeball at %s...\n", pokemon.Name)
 	if c.catch(pokemon) {
 		fmt.Printf("%s was caught!\n", pokemon.Name)
+		fmt.Printf("You may now inspect it with the 'inspect' command.\n")
 		*c.caughtPokemon = append(*c.caughtPokemon, pokemon.Name)
 	} else {
 		fmt.Printf("%s escaped!\n", pokemon.Name)
