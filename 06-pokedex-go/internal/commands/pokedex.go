@@ -1,6 +1,7 @@
 package commands
 
 import (
+	"errors"
 	"fmt"
 )
 
@@ -25,6 +26,10 @@ func (p *PokedexCommand) Description() string {
 
 // Execute handles the pokedex command execution
 func (p *PokedexCommand) Execute(args []string) error {
+	if len(*p.caughtPokemon) == 0 {
+		return errors.New("you have not caught any Pokemon yet")
+	}
+
 	fmt.Println("Your Pokedex:")
 	for _, pokemon := range *p.caughtPokemon {
 		fmt.Println(" -", pokemon)
