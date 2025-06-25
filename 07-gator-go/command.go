@@ -95,3 +95,13 @@ func handlerRegister(s *state, cmd *command) error {
 	fmt.Println("User registered successfully:", user.Name)
 	return nil
 }
+
+func handlerReset(s *state, cmd *command) error {
+	err := s.db.DeleteAllUsers(context.Background())
+	if err != nil {
+		return err
+	}
+
+	fmt.Println("Database has been reset. All users are removed.")
+	return nil
+}

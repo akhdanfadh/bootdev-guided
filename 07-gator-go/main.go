@@ -49,6 +49,7 @@ func main() {
 	commands := commands{}
 	commands.register("login", handlerLogin)
 	commands.register("register", handlerRegister)
+	commands.register("reset", handlerReset)
 
 	// Run the command from arguments
 	command := command{name: args[0], args: args[1:]}
