@@ -49,7 +49,16 @@ func handlerLogin(s *state, cmd *command) error {
 	if len(cmd.args) != 1 {
 		return errors.New("login command requires exactly one argument: username")
 	}
-	err := s.cfg.SetUser(cmd.args[0])
+
+	// make sure the user exists in the database
+	user, err := s.db.GetUser(context.Background(), cmd.args[0])
+	if err != nil {
+		fmt.Println("failed to get user:", err)
+		os.Exit(1)
+	}
+
+	// set user in config
+	err = s.cfg.SetUser(user.Name)
 	if err != nil {
 		return err
 	}
