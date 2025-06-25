@@ -121,3 +121,15 @@ func handlerReset(s *state, cmd *command) error {
 	fmt.Println("Database has been reset. All users are removed.")
 	return nil
 }
+
+func handlerAgg(s *state, cmd *command) error {
+	// currently hardcoded for bootdev submission
+	feedURL := "https://www.wagslane.dev/index.xml"
+	rssFeed, err := fetchFeed(context.Background(), feedURL)
+	if err != nil {
+		return err
+	}
+
+	printFeed(rssFeed)
+	return nil
+}
