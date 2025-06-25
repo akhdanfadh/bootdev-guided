@@ -1,10 +1,13 @@
 package main
 
 import (
+	"database/sql"
 	"fmt"
 	"os"
 
 	"github.com/akhdanfadh/bootdev-guided/07-gator-go/internal/config"
+	"github.com/akhdanfadh/bootdev-guided/07-gator-go/internal/database"
+	_ "github.com/lib/pq"
 )
 
 func main() {
@@ -22,15 +25,30 @@ func main() {
 		os.Exit(1)
 	}
 
-	println("Configuration loaded before modification:")
+	println("Initial configuration:")
 	println("Database URL:", config.DatabaseURL)
 	println("Current Username:", config.CurrentUsername)
 	println()
 
+	// Open a connection to the database
+	db, err := sql.Open("postgres", config.DatabaseURL)
+	if err != nil {
+		fmt.Println("failed to connect to database:", err)
+		os.Exit(1)
+	}
+	defer db.Close()
+
+	// Create a new database queries instance
+	dbQueries := database.New(db)
+
 	// Register state and commands
-	state := state{config: &config}
+	state := state{
+		db:  dbQueries,
+		cfg: &config,
+	}
 	commands := commands{}
 	commands.register("login", handlerLogin)
+	commands.register("register", handlerRegister)
 
 	// Run the command from arguments
 	command := command{name: args[0], args: args[1:]}
@@ -41,7 +59,7 @@ func main() {
 	}
 
 	println()
-	println("Configuration updated after modification:")
+	println("Updated configuration:")
 	println("Database URL:", config.DatabaseURL)
 	println("Current Username:", config.CurrentUsername)
 }

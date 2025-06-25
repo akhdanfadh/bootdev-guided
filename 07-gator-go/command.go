@@ -1,14 +1,20 @@
 package main
 
 import (
+	"context"
 	"errors"
 	"fmt"
+	"os"
+	"time"
 
 	"github.com/akhdanfadh/bootdev-guided/07-gator-go/internal/config"
+	"github.com/akhdanfadh/bootdev-guided/07-gator-go/internal/database"
+	"github.com/google/uuid"
 )
 
 type state struct {
-	config *config.Config
+	db  *database.Queries
+	cfg *config.Config
 }
 
 type command struct {
@@ -43,10 +49,40 @@ func handlerLogin(s *state, cmd *command) error {
 	if len(cmd.args) != 1 {
 		return errors.New("login command requires exactly one argument: username")
 	}
-	err := s.config.SetUser(cmd.args[0])
+	err := s.cfg.SetUser(cmd.args[0])
 	if err != nil {
 		return err
 	}
 	fmt.Println("Login successful for user:", cmd.args[0])
+	return nil
+}
+
+func handlerRegister(s *state, cmd *command) error {
+	if len(cmd.args) != 1 {
+		return errors.New("register command requires exactly one argument: username")
+	}
+
+	// create a new user in the database
+	args := database.CreateUserParams{
+		ID:        uuid.New(),
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+		Name:      cmd.args[0],
+	}
+	user, err := s.db.CreateUser(context.Background(), args)
+	if err != nil {
+		// since users.name is unique, the CreateUser function will return an error
+		// or it can be other errors like connection error
+		fmt.Println("failed to create user:", err)
+		os.Exit(1)
+	}
+
+	// set current user in config
+	err = s.cfg.SetUser(user.Name)
+	if err != nil {
+		return err
+	}
+
+	fmt.Println("User registered successfully:", user.Name)
 	return nil
 }
