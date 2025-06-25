@@ -25,11 +25,6 @@ func main() {
 		os.Exit(1)
 	}
 
-	println("Initial configuration:")
-	println("Database URL:", config.DatabaseURL)
-	println("Current Username:", config.CurrentUsername)
-	println()
-
 	// Open a connection to the database
 	db, err := sql.Open("postgres", config.DatabaseURL)
 	if err != nil {
@@ -59,9 +54,4 @@ func main() {
 		fmt.Println(err)
 		os.Exit(1)
 	}
-
-	println()
-	println("Updated configuration:")
-	println("Database URL:", config.DatabaseURL)
-	println("Current Username:", config.CurrentUsername)
 }
