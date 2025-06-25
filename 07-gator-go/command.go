@@ -66,6 +66,22 @@ func handlerLogin(s *state, cmd *command) error {
 	return nil
 }
 
+func handlerUsers(s *state, cmd *command) error {
+	users, err := s.db.GetUsers(context.Background())
+	if err != nil {
+		return err
+	}
+
+	for _, user := range users {
+		if user.Name == s.cfg.CurrentUsername {
+			fmt.Println("*", user.Name, "(current)")
+		} else {
+			fmt.Println("*", user.Name)
+		}
+	}
+	return nil
+}
+
 func handlerRegister(s *state, cmd *command) error {
 	if len(cmd.args) != 1 {
 		return errors.New("register command requires exactly one argument: username")
