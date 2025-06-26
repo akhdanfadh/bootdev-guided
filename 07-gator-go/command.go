@@ -163,3 +163,15 @@ func handlerAddFeed(s *state, cmd *command) error {
 	fmt.Println("Feed added successfully:", feed.Name, "with URL of", feed.Url)
 	return nil
 }
+
+func handlerFeeds(s *state, cmd *command) error {
+	feeds, err := s.db.GetFeeds(context.Background())
+	if err != nil {
+		return err
+	}
+
+	for _, feed := range feeds {
+		fmt.Printf("* %s (%s)\n", feed.Name, feed.Url)
+	}
+	return nil
+}
