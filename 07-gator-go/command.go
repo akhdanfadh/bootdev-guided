@@ -133,3 +133,33 @@ func handlerAgg(s *state, cmd *command) error {
 	printFeed(rssFeed)
 	return nil
 }
+
+func handlerAddFeed(s *state, cmd *command) error {
+	if len(cmd.args) != 2 {
+		return errors.New("addfeed command requires exactly two arguments: feed name and feed URL")
+	}
+
+	// get current user UUID
+	currentUser, err := s.db.GetUser(context.Background(), s.cfg.CurrentUsername)
+	if err != nil {
+		return err
+	}
+	currentUserID := currentUser.ID
+
+	// create a new feed in the database
+	args := database.CreateFeedParams{
+		ID:        uuid.New(),
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+		Name:      cmd.args[0],
+		Url:       cmd.args[1],
+		UserID:    currentUserID,
+	}
+	feed, err := s.db.CreateFeed(context.Background(), args)
+	if err != nil {
+		return err
+	}
+
+	fmt.Println("Feed added successfully:", feed.Name, "with URL of", feed.Url)
+	return nil
+}
