@@ -171,7 +171,13 @@ func handlerFeeds(s *state, cmd *command) error {
 	}
 
 	for _, feed := range feeds {
-		fmt.Printf("* %s (%s)\n", feed.Name, feed.Url)
+		user, err := s.db.GetUserById(context.Background(), feed.UserID)
+		if err != nil {
+			return err
+		}
+		username := user.Name
+
+		fmt.Printf("* %s (%s), added by %s\n", feed.Name, feed.Url, username)
 	}
 	return nil
 }
