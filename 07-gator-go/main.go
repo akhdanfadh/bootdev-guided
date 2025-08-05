@@ -47,10 +47,10 @@ func main() {
 	commands.register("reset", handlerReset)
 	commands.register("users", handlerUsers)
 	commands.register("agg", handlerAgg)
-	commands.register("addfeed", handlerAddFeed)
+	commands.register("addfeed", middlewareLoggedIn(handlerAddFeed))
 	commands.register("feeds", handlerFeeds)
-	commands.register("follow", handlerFollow)
-	commands.register("following", handlerFollowing)
+	commands.register("follow", middlewareLoggedIn(handlerFollow))
+	commands.register("following", middlewareLoggedIn(handlerFollowing))
 
 	// Run the command from arguments
 	command := command{name: args[0], args: args[1:]}
