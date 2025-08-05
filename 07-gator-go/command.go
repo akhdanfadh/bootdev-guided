@@ -227,3 +227,15 @@ func handlerFollow(s *state, cmd *command) error {
 	fmt.Println(feed_follows.Name, "successfully follow", feed_follows.Name_2)
 	return nil
 }
+
+func handlerFollowing(s *state, cmd *command) error {
+	following, err := s.db.GetFeedFollowsForUser(context.Background(), s.cfg.CurrentUsername)
+	if err != nil {
+		return err
+	}
+
+	for _, row := range following {
+		fmt.Println("*", row.FeedName)
+	}
+	return nil
+}
