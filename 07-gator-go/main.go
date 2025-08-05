@@ -49,6 +49,7 @@ func main() {
 	commands.register("agg", handlerAgg)
 	commands.register("addfeed", handlerAddFeed)
 	commands.register("feeds", handlerFeeds)
+	commands.register("follow", handlerFollow)
 
 	// Run the command from arguments
 	command := command{name: args[0], args: args[1:]}

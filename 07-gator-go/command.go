@@ -144,7 +144,6 @@ func handlerAddFeed(s *state, cmd *command) error {
 	if err != nil {
 		return err
 	}
-	currentUserID := currentUser.ID
 
 	// create a new feed in the database
 	args := database.CreateFeedParams{
@@ -153,9 +152,22 @@ func handlerAddFeed(s *state, cmd *command) error {
 		UpdatedAt: time.Now(),
 		Name:      cmd.args[0],
 		Url:       cmd.args[1],
-		UserID:    currentUserID,
+		UserID:    currentUser.ID,
 	}
 	feed, err := s.db.CreateFeed(context.Background(), args)
+	if err != nil {
+		return err
+	}
+
+	// create a new feed_follows in the database
+	args_new := database.CreateFeedFollowParams{
+		ID:        uuid.New(),
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+		UserID:    currentUser.ID,
+		FeedID:    feed.ID,
+	}
+	_, err = s.db.CreateFeedFollow(context.Background(), args_new)
 	if err != nil {
 		return err
 	}
@@ -179,5 +191,39 @@ func handlerFeeds(s *state, cmd *command) error {
 
 		fmt.Printf("* %s (%s), added by %s\n", feed.Name, feed.Url, username)
 	}
+	return nil
+}
+
+func handlerFollow(s *state, cmd *command) error {
+	if len(cmd.args) != 1 {
+		return errors.New("follow command requires exactly one arguments: feed URL")
+	}
+
+	// validate the URL argument
+	feed, err := s.db.GetFeedByUrl(context.Background(), cmd.args[0])
+	if err != nil { // sqlc will return sql.ErrNoRows basically
+		return errors.New("given feed URL does not match any feeds in the database")
+	}
+
+	// get current user UUID
+	currentUser, err := s.db.GetUser(context.Background(), s.cfg.CurrentUsername)
+	if err != nil {
+		return err
+	}
+
+	// create a new feed_follows in the database
+	args := database.CreateFeedFollowParams{
+		ID:        uuid.New(),
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+		UserID:    currentUser.ID,
+		FeedID:    feed.ID,
+	}
+	feed_follows, err := s.db.CreateFeedFollow(context.Background(), args)
+	if err != nil {
+		return err
+	}
+
+	fmt.Println(feed_follows.Name, "successfully follow", feed_follows.Name_2)
 	return nil
 }
