@@ -137,15 +137,30 @@ func handlerReset(s *state, cmd *command) error {
 }
 
 func handlerAgg(s *state, cmd *command) error {
-	// currently hardcoded for bootdev submission
-	feedURL := "https://www.wagslane.dev/index.xml"
-	rssFeed, err := fetchFeed(context.Background(), feedURL)
+	if len(cmd.args) != 1 {
+		return errors.New("agg command requires exactly one arguments: time between requests")
+	}
+
+	// parse argument as time.Duration
+	time_between_reqs, err := time.ParseDuration(cmd.args[0])
 	if err != nil {
 		return err
 	}
+	fmt.Println("Collecting feeds every", time_between_reqs)
 
-	printFeed(rssFeed)
-	return nil
+	// run the scrapeFeeds immediately (first time)
+	err = scrapeFeeds(s, context.Background())
+	if err != nil {
+		fmt.Println(err)
+	}
+	// then every time the ticker ticks
+	ticker := time.NewTicker(time_between_reqs)
+	for ; ; <-ticker.C {
+		err = scrapeFeeds(s, context.Background())
+		if err != nil {
+			fmt.Println(err)
+		}
+	}
 }
 
 func handlerAddFeed(s *state, cmd *command, user database.User) error {

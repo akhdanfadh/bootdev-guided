@@ -3,9 +3,13 @@ package main
 import (
 	"context"
 	"encoding/xml"
+	"fmt"
 	"html"
 	"io"
 	"net/http"
+	"time"
+
+	"github.com/akhdanfadh/bootdev-guided/07-gator-go/internal/database"
 )
 
 type RSSItem struct {
@@ -78,4 +82,36 @@ func fetchFeed(ctx context.Context, feedURL string) (*RSSFeed, error) {
 	}
 
 	return &rssFeed, nil
+}
+
+func scrapeFeeds(s *state, ctx context.Context) error {
+	// get next feed to fetch
+	feedToFetch, err := s.db.GetNextFeedToFetch(ctx)
+	if err != nil {
+		return err
+	}
+
+	// mark feed as fetched
+	args := database.MarkFeedFetchedByIdParams{
+		ID:        feedToFetch.ID,
+		UpdatedAt: time.Now(),
+	}
+	err = s.db.MarkFeedFetchedById(ctx, args)
+	if err != nil {
+		return err
+	}
+
+	// now fetch the feed
+	rssFeed, err := fetchFeed(ctx, feedToFetch.Url)
+	if err != nil {
+		return err
+	}
+
+	// print each item in the feed
+	fmt.Println("---", rssFeed.Channel.Title, "---")
+	fmt.Println("--- Last update:", args.UpdatedAt)
+	for _, item := range rssFeed.Channel.Item {
+		fmt.Println("*", item.Title)
+	}
+	return nil
 }

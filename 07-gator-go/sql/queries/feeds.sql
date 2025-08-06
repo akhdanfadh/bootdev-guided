@@ -8,3 +8,9 @@ SELECT * FROM feeds;
 
 -- name: GetFeedByUrl :one
 SELECT * FROM feeds WHERE url = $1;
+
+-- name: MarkFeedFetchedById :exec
+UPDATE feeds SET updated_at = $2, last_fetched_at = $2 WHERE id = $1;
+
+-- name: GetNextFeedToFetch :one
+SELECT * FROM feeds ORDER BY last_fetched_at NULLS FIRST LIMIT 1;
