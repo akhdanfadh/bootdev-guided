@@ -241,3 +241,26 @@ func handlerFollowing(s *state, cmd *command, user database.User) error {
 	}
 	return nil
 }
+
+func handlerUnfollow(s *state, cmd *command, user database.User) error {
+	if len(cmd.args) != 1 {
+		return errors.New("unfollow command requires exactly one arguments: feed URL")
+	}
+
+	// validate the URL argument
+	feed, err := s.db.GetFeedByUrl(context.Background(), cmd.args[0])
+	if err != nil { // sqlc will return sql.ErrNoRows basically
+		return errors.New("given feed URL does not match any feeds in the database")
+	}
+
+	args := database.UnfollowFeedByUserAndUrlParams{
+		UserID: user.ID,
+		FeedID: feed.ID,
+	}
+	err = s.db.UnfollowFeedByUserAndUrl(context.Background(), args)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
