@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/akhdanfadh/bootdev-guided/07-gator-go/internal/config"
@@ -275,6 +276,61 @@ func handlerUnfollow(s *state, cmd *command, user database.User) error {
 	err = s.db.UnfollowFeedByUserAndUrl(context.Background(), args)
 	if err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func handlerBrowse(s *state, cmd *command, user database.User) error {
+	limit := int32(2) // default limit
+	if len(cmd.args) > 1 {
+		return errors.New("browse command accepts at most one argument: limit")
+	}
+
+	// parse limit if provided
+	if len(cmd.args) == 1 {
+		parsed, err := strconv.ParseInt(cmd.args[0], 10, 32)
+		if err != nil {
+			return errors.New("limit must be a valid integer")
+		}
+		if parsed <= 0 {
+			return errors.New("limit must be a positive integer")
+		}
+		limit = int32(parsed)
+	}
+
+	// get posts for user
+	args := database.GetPostsForUserParams{
+		Name:  user.Name,
+		Limit: limit,
+	}
+	posts, err := s.db.GetPostsForUser(context.Background(), args)
+	if err != nil {
+		return err
+	}
+
+	if len(posts) == 0 {
+		fmt.Println("No posts found. Make sure you're following some feeds and run 'agg' to fetch posts.")
+		return nil
+	}
+
+	// display posts
+	fmt.Printf("Found %d posts for user %s:\n\n", len(posts), user.Name)
+	for _, post := range posts {
+		fmt.Printf("* %s\n", post.Title)
+		fmt.Printf("  From: %s\n", post.FeedName)
+		if post.Description.Valid && post.Description.String != "" {
+			// truncate description if too long
+			desc := post.Description.String
+			if len(desc) > 100 {
+				desc = desc[:100] + "..."
+			}
+			fmt.Printf("  Description: %s\n", desc)
+		}
+		if post.PublishedAt.Valid {
+			fmt.Printf("  Published: %s\n", post.PublishedAt.Time.Format("2006-01-02 15:04:05"))
+		}
+		fmt.Printf("  Link: %s\n\n", post.Url)
 	}
 
 	return nil

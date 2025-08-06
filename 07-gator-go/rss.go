@@ -2,14 +2,17 @@ package main
 
 import (
 	"context"
+	"database/sql"
 	"encoding/xml"
 	"fmt"
 	"html"
 	"io"
+	"log"
 	"net/http"
 	"time"
 
 	"github.com/akhdanfadh/bootdev-guided/07-gator-go/internal/database"
+	"github.com/google/uuid"
 )
 
 type RSSItem struct {
@@ -107,10 +110,55 @@ func scrapeFeeds(s *state, ctx context.Context) error {
 		return err
 	}
 
-	// print each item in the feed
-	fmt.Println("---", rssFeed.Channel.Title, "---")
-	fmt.Println("--- Last update:", args.UpdatedAt)
+	// process every scraping
+	log.Printf("Processing %s", rssFeed.Channel.Title)
 	for _, item := range rssFeed.Channel.Item {
+
+		// parse published date
+		var publishedAt sql.NullTime
+		if item.PubDate != "" {
+			// try common RSS date formats
+			layouts := []string{
+				time.RFC1123,  // "Mon, 02 Jan 2006 15:04:05 MST"
+				time.RFC1123Z, // "Mon, 02 Jan 2006 15:04:05 -0700"
+				time.RFC822,   // "02 Jan 06 15:04 MST"
+				time.RFC822Z,  // "02 Jan 06 15:04 -0700"
+				time.RFC850,   // "Monday, 02-Jan-06 15:04:05 MST"
+				time.RFC3339,  // "2006-01-02T15:04:05Z07:00"
+			}
+			for _, layout := range layouts {
+				if parsedTime, err := time.Parse(layout, item.PubDate); err == nil {
+					publishedAt = sql.NullTime{Time: parsedTime, Valid: true}
+					break
+				}
+			}
+		}
+
+		// create post params
+		postParams := database.CreatePostParams{
+			ID:          uuid.New(),
+			CreatedAt:   time.Now(),
+			UpdatedAt:   time.Now(),
+			Title:       item.Title,
+			Url:         item.Link,
+			Description: sql.NullString{String: item.Description, Valid: item.Description != ""},
+			PublishedAt: publishedAt,
+			FeedID:      feedToFetch.ID,
+		}
+
+		// save post to database
+		_, err := s.db.CreatePost(ctx, postParams)
+		if err != nil {
+			// check if it's a unique constraint violation (URL already exists)
+			if err.Error() == "UNIQUE constraint failed: posts.url" ||
+				err.Error() == "pq: duplicate key value violates unique constraint \"posts_url_key\"" {
+				// ignore duplicate URLs
+				continue
+			}
+			// log other errors but don't stop processing
+			log.Printf("Error saving post %q: %v", item.Title, err)
+			continue
+		}
 		fmt.Println("*", item.Title)
 	}
 	return nil
